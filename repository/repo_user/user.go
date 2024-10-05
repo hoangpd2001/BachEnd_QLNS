@@ -9,7 +9,7 @@ type UserRepo interface {
 	CreatUser(context context.Context, user resUser.ResUser) (resUser.ResUser, error)
 	// CheckLogin(context context.Context, loginReq req_user.ReqSignIn) (resUser.User, error)
 	SelectUserAll(context context.Context) ([]resUser.ResUser, error)
-	SelectUserById(context context.Context, IdUser int) (resUser.ResUserFull, error)
+	SelectUserById(context context.Context, IdUser int) (resUser.ResUser, error)
 	// UpdateUserById(context context.Context, user model.User ) (model.User, error)
 }
 type EducationRepo interface {

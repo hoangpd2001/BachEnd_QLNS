@@ -5,8 +5,6 @@ import (
 	resUser "BackEnd/mod/model/model_user/res_user"
 	repouser "BackEnd/mod/repository/repo_user"
 	"context"
-	"database/sql"
-
 	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/gommon/log"
@@ -25,10 +23,9 @@ func NewUserRepo(sql *sqlx.DB) repouser.UserRepo {
 func (u UserRepoImpl) CreatUser(context context.Context, user resUser.ResUser) (resUser.ResUser, error) {
 	statement :=
 		`
-	INSERT INTO nhanvien( Ten, Dem, Ho, Email, Pass,
-	 		LoaiNhanVien, CapBac, ChiNhanh, NgayBatDau)
-	VALUES (:Ten, :Dem, :Ho, :Email, :Pass,
-			:LoaiNhanVien, :CapBac, :ChiNhanh, :NgayBatDau)
+	INSERT INTO nhanvien( Ten, Dem, Ho, Email, GioiTinh,
+	 SDT, NgaySinh, DiaChi, CCCD, IDLoaiNhanVien, IDCapBac, NgayBatDau, NgayKetThuc) 
+	 VALUES (:Ten,:Dem,:Ho,:Email,:GioiTinh,:SDT,:NgaySinh,:DiaChi,:CCCD,:IDLoaiNhanVien,:IDCapBac,:NgayBatDau,:NgayKetThuc)
 	`
 	result, err := u.sqlDB.NamedExecContext(context, statement, user)
 	if err != nil {
@@ -48,58 +45,31 @@ func (u UserRepoImpl) CreatUser(context context.Context, user resUser.ResUser) (
 		return user, err
 	}
 	user.ID = int(userID)
-	// user.IDNhanVien = user.ID
-	// statement =
-	// 	`
-	// INSERT INTO nhanvien_thongtin(IDNhanVien, GioiTinh, SDT, EmailCaNhan,
-	// DiaChiThuongTru, DiaChiTamTru, CCCD) VALUES
-	// (:IDNhanVien, :GioiTinh, :SDT, :EmailCaNhan,
-	// :DiaChiThuongTru, :DiaChiTamTru, :CCCD)
-	// `
-	// _, err = u.sqlDB.NamedExecContext(context, statement, user)
-	// if err != nil {
-	// 	log.Error(err.Error())
-	// 	if err, ok := err.(*mysql.MySQLError); ok {
-	// 		if err.Number == 1062 {
-	// 			return user, banana.UserConflict
-
-	// 		}
-	// 	}
-
-	// 	return user, banana.SignUpFail
-	// }
-	// statement =
-	// 	`
-	// INSERT INTO nhanvien_nguoithan(IDNhanVien, TenNguoiThan,
-	// SDTNguoiThan, QuanHe, DiaChi) VALUES
-	// (:IDNhanVien, :TenNguoiThan, :SDTNguoiThan, :QuanHe, :DiaChi)
-	// `
-	// _, err = u.sqlDB.NamedExecContext(context, statement, user)
-	// if err != nil {
-	// 	log.Error(err.Error())
-	// 	if err, ok := err.(*mysql.MySQLError); ok {
-	// 		if err.Number == 1062 {
-	// 			return user, banana.UserConflict
-
-	// 		}
-	// 	}
-
-	// 	return user, banana.SignUpFail
-	// }
 	return user, nil
 }
 
 // =====================================================================================================================
 func (u UserRepoImpl) SelectUserAll(context context.Context) ([]resUser.ResUser, error) {
 	var listUser []resUser.ResUser
-
-	err := u.sqlDB.SelectContext(context, &listUser,
-		"SELECT * FROM nhanvien ")
-
+	sql:=`SELECT 
+    nv.ID, nv.Ten, nv.Ho,nv.Dem, nv.Email, nv.GioiTinh, nv.SDT, nv.NgaySinh, nv.DiaChi, nv.CCCD,nv.NgayBatDau,nv.NgayKetThuc,
+    loainv.LoaiNhanVien,
+    capbac.TenCapBac,
+    chucdanh.IDChucDanh,
+    phongban.TenPhongBan,
+    chinhanh.ChiNhanh
+	FROM 
+    nhanvien nv
+	LEFT JOIN loainhanvien loainv ON nv.IDLoaiNhanVien = loainv.ID
+	LEFT JOIN capbac capbac ON nv.IDCapBac = capbac.ID
+	LEFT JOIN nhanvien_chucdanh chucdanh ON nv.ID = chucdanh.IDNhanVien 
+    AND chucdanh.NgayKetThuc ="0000-00-00 00:00:00"
+    AND chucdanh.NgayBatDau !="0000-00-00 00:00:00"
+	LEFT JOIN phongban phongban ON chucdanh.IDPhongBan = phongban.ID
+	LEFT JOIN chinhanh chinhanh ON phongban.IDChiNhanh = chinhanh.ID
+	`
+	err := u.sqlDB.SelectContext(context, &listUser,sql)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return listUser, banana.UserNotFound
-		}
 		log.Error(err.Error())
 		return listUser, err
 	}
@@ -109,9 +79,28 @@ func (u UserRepoImpl) SelectUserAll(context context.Context) ([]resUser.ResUser,
 
 //=================================================================================================================================
 
-func (u UserRepoImpl) SelectUserById(context context.Context, UserId int) (resUser.ResUserFull, error) {
-	var user resUser.ResUserFull
-	err := u.sqlDB.GetContext(context, &user, "SELECT * FROM nhanvien Where ID = ?", UserId)
+func (u UserRepoImpl) SelectUserById(context context.Context, UserId int) (resUser.ResUser, error) {
+	var user resUser.ResUser
+	sql:=`SELECT 
+    nv.ID, nv.Ten, nv.Ho,nv.Dem, nv.Email, nv.GioiTinh, nv.SDT, nv.NgaySinh, nv.DiaChi, nv.CCCD,nv.NgayBatDau,nv.NgayKetThuc,
+    loainv.LoaiNhanVien,
+    capbac.TenCapBac,
+    nguoiThan.TenNguoiThan, nguoiThan.SDTNguoiThan, nguoiThan.QuanHe, nguoiThan.DiaChiNguoiThan,
+    chucdanh.IDChucDanh, 
+    phongban.TenPhongBan,
+    chinhanh.ChiNhanh
+	FROM 
+    nhanvien nv
+	LEFT JOIN loainhanvien loainv ON nv.IDLoaiNhanVien = loainv.ID
+	LEFT JOIN capbac capbac ON nv.IDCapBac = capbac.ID
+	LEFT JOIN nhanvien_nguoithan nguoiThan ON nv.ID = nguoiThan.IDNhanVien
+	LEFT JOIN nhanvien_chucdanh chucdanh ON nv.ID = chucdanh.IDNhanVien 
+    AND chucdanh.NgayKetThuc ="0000-00-00 00:00:00"
+    AND chucdanh.NgayBatDau !="0000-00-00 00:00:00"
+	LEFT JOIN phongban phongban ON chucdanh.IDPhongBan = phongban.ID
+	LEFT JOIN chinhanh chinhanh ON phongban.IDChiNhanh = chinhanh.ID
+	Where nv.ID = ?`
+	err := u.sqlDB.GetContext(context, &user, sql, UserId)
 
 	if err != nil {
 		log.Error(err.Error())
@@ -123,31 +112,6 @@ func (u UserRepoImpl) SelectUserById(context context.Context, UserId int) (resUs
 		}
 
 		return user, banana.SignUpFail
-	}
-	err = u.sqlDB.GetContext(context, &user, "SELECT * FROM nhanvien_nguoithan Where IDNhanVien = ?", UserId)
-	if err != nil {
-		log.Error(err.Error())
-		if err, ok := err.(*mysql.MySQLError); ok {
-			if err.Number == 1062 {
-				return user, banana.GetIdFailed
-
-			}
-		}
-
-		return user, banana.SignUpFail
-	}
-
-	err = u.sqlDB.GetContext(context, &user, "SELECT * FROM nhanvien_thongtin Where IDNhanVien = ?", UserId)
-	if err != nil {
-		log.Error(err.Error())
-		if err, ok := err.(*mysql.MySQLError); ok {
-			if err.Number == 1062 {
-				return user, banana.GetIdFailed
-
-			}
-		}
-
-		return user, banana.GetIdFailed
 	}
 	return user, nil
 }

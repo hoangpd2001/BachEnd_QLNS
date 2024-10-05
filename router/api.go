@@ -3,6 +3,8 @@ package router
 import (
 	branchcontroller "BackEnd/mod/controller/branch_controller"
 	departmentcontroller "BackEnd/mod/controller/department_controller"
+	grupcontroller "BackEnd/mod/controller/grup_controller"
+	levelcontroller "BackEnd/mod/controller/level_controller"
 	skillcontroller "BackEnd/mod/controller/skill_controller"
 	titlecontroller "BackEnd/mod/controller/title_controller"
 	typecontroller "BackEnd/mod/controller/type_controller"
@@ -23,6 +25,8 @@ type API struct {
 	TitleController      titlecontroller.TitleController
 	DepartmentController departmentcontroller.DepartmentController
 	UserTitleController  titlecontroller.UserTitleController
+	LevelController      levelcontroller.LevelController
+	GrupController  	grupcontroller.GrupController
 }
 
 func (api *API) SetupRouter() {
@@ -86,6 +90,17 @@ func (api *API) SetupRouter() {
 	api.Echo.PUT("/userTitle/update/", api.UserTitleController.UpdateUserTitle)
 	api.Echo.DELETE("/userTitle/delete/", api.UserTitleController.DeleteUserTitle)
 
+	api.Echo.POST("/level/creat", api.LevelController.CreatLevel)
+	api.Echo.GET("/level/selectAll", api.LevelController.SelectLevelAll)
+	api.Echo.GET("/level/selectOne/", api.LevelController.SelelectLevelByUser)
+	api.Echo.PUT("/level/update/", api.LevelController.UpdateLevelById)
+	api.Echo.DELETE("/level/delete/", api.LevelController.DeleteLevelById)
 
+	api.Echo.POST("/grup/creat", api.GrupController.CreatGrup)
+	api.Echo.GET("/grup/selectAll", api.GrupController.SelectGrupAll)
+	api.Echo.PUT("/grup/update/", api.GrupController.UpdateGrupById)
+	api.Echo.DELETE("/grup/delete/", api.GrupController.DeleteGrupById)
+
+	
 
 }

@@ -3,12 +3,16 @@ package config
 import (
 	branchcontroller "BackEnd/mod/controller/branch_controller"
 	departmentcontroller "BackEnd/mod/controller/department_controller"
+	grupcontroller "BackEnd/mod/controller/grup_controller"
+	levelcontroller "BackEnd/mod/controller/level_controller"
 	skillcontrollerr "BackEnd/mod/controller/skill_controller"
 	titlecontroller "BackEnd/mod/controller/title_controller"
 	typecontroller "BackEnd/mod/controller/type_controller"
 	usercontroller "BackEnd/mod/controller/user_controller"
 	repobranch "BackEnd/mod/repository/repo_branch"
 	repodepartment "BackEnd/mod/repository/repo_department"
+	repogrup "BackEnd/mod/repository/repo_grup"
+	repolevel "BackEnd/mod/repository/repo_level"
 	reposkill "BackEnd/mod/repository/repo_skill"
 	repotitle "BackEnd/mod/repository/repo_title"
 	repotype "BackEnd/mod/repository/repo_type"
@@ -31,8 +35,8 @@ func InitApp(e *echo.Echo, sqlDB *sqlx.DB) *router.API {
 	titleRepo := repotitle.NewTitleRepo(sqlDB)
 	departmentRepo := repodepartment.NewDepartment(sqlDB)
 	userTitleRepo := repotitle.NewUserTitleRepo(sqlDB)
-
-	
+	levelRepo := repolevel.NewLevelRepo(sqlDB)
+	grupRepo := repogrup.NewGrupRepo(sqlDB)
 	userController := usercontroller.UseController{
 		UserRepo: userRepo,
 	}
@@ -63,7 +67,12 @@ func InitApp(e *echo.Echo, sqlDB *sqlx.DB) *router.API {
 	departmentcontroller := departmentcontroller.DepartmentController{
 		DepartmentRepo: *departmentRepo,
 	}
-
+	levelcontroller := levelcontroller.LevelController{
+		LevelRepo: *levelRepo,
+	}
+	grupcontroller := grupcontroller.GrupController{
+		GrupRepo: *grupRepo,
+	}
 	api := &router.API{
 		Echo:                 e,
 		UseController:        userController,
@@ -76,6 +85,8 @@ func InitApp(e *echo.Echo, sqlDB *sqlx.DB) *router.API {
 		TitleController:      titlecontroller,
 		DepartmentController: departmentcontroller,
 		UserTitleController:  UserTitleController,
+		LevelController:      levelcontroller,
+		GrupController:       grupcontroller,
 	}
 
 	return api

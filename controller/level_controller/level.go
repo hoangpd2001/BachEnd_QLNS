@@ -1,10 +1,10 @@
-package titlecontroller
+package levelcontroller
 
 import (
 	"BackEnd/mod/banana"
 	"BackEnd/mod/model"
-	modetitle "BackEnd/mod/model/model_title"
-	repotitle "BackEnd/mod/repository/repo_title"
+	modelevel "BackEnd/mod/model/mode_level"
+	repolevel "BackEnd/mod/repository/repo_level"
 	"BackEnd/mod/utils"
 	"fmt"
 	"net/http"
@@ -13,22 +13,19 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type UserTitleController struct {
-	UserTitleRepo repotitle.UserTitleRepo
-	Bind          utils.Bind
-	CustomDate    utils.CustomDate
-	CustomDate2   utils.CustomDate
+type LevelController struct {
+	LevelRepo repolevel.LevelRepo
+	Bind      utils.Bind
 }
 
 // ========================================================================================================
-func (u *UserTitleController) CreatUserTitle(c echo.Context) error {
-
-	req := &modetitle.ReqUserTitle{}
+func (u *LevelController) CreatLevel(c echo.Context) error {
+	req := &modelevel.ReqLevel{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
 	if err != nil {
 		return err
 	}
-	req, ok := validatedReq.(*modetitle.ReqUserTitle)
+	req, ok := validatedReq.(*modelevel.ReqLevel)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
 			StatusCode: http.StatusInternalServerError,
@@ -36,25 +33,11 @@ func (u *UserTitleController) CreatUserTitle(c echo.Context) error {
 			Data:       nil,
 		})
 	}
-	err = u.CustomDate.UnmarshalJSON([]byte(`"` + req.NgayBatDau + `"`))
-	if err != nil {
-		fmt.Println("Error parsing NgayBatDau:", err)
+	res := modelevel.ResLevel{
+		TenCapBac: req.TenCapBac,
+		CauTrucLuong: req.CauTrucLuong,
 	}
-
-	if req.NgayKetThuc != "" {
-		err = u.CustomDate2.UnmarshalJSON([]byte(`"` + req.NgayKetThuc + `"`))
-		if err != nil {
-			fmt.Println("Error parsing NgayKetThuc:", err)
-		}
-	}
-	res := modetitle.ResUserTitle{
-		IDNhanVien:  req.IDNhanVien,
-		IDChucDanh:  req.IDChucDanh,
-		IDPhongBan:  req.IDPhongBan,
-		NgayBatDau:  u.CustomDate.Time,
-		NgayKetThuc: u.CustomDate2.Time,
-	}
-	Result, err := u.UserTitleRepo.CreatUserTitle(c.Request().Context(), res)
+	level, err := u.LevelRepo.CreatLevel(c.Request().Context(), res)
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -65,22 +48,14 @@ func (u *UserTitleController) CreatUserTitle(c echo.Context) error {
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
-		Data:       Result,
+		Data:       level,
 	})
 }
 
 // //========================================================================================================
 
-func (u *UserTitleController) SelectUserTitleAll(c echo.Context) error {
-	idUser, err := strconv.Atoi(c.QueryParam("id"))
-	if err != nil {
-		return c.JSON(http.StatusConflict, model.Response{
-			StatusCode: http.StatusConflict,
-			Message:    banana.GetIdFailed.Error(),
-			Data:       nil,
-		})
-	}
-	Result, err := u.UserTitleRepo.SelectUserTitleAll(c.Request().Context(), idUser)
+func (u *LevelController) SelectLevelAll(c echo.Context) error {
+	level, err := u.LevelRepo.SelectLevelAll(c.Request().Context())
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -91,13 +66,13 @@ func (u *UserTitleController) SelectUserTitleAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
-		Data:       Result,
+		Data:       level,
 	})
 }
 
 // //========================================================================================================
 
-func (u *UserTitleController) SelelectUserTitle(c echo.Context) error {
+func (u *LevelController) SelelectLevelByUser(c echo.Context) error {
 	idUser, err := strconv.Atoi(c.QueryParam("id"))
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
@@ -107,16 +82,7 @@ func (u *UserTitleController) SelelectUserTitle(c echo.Context) error {
 		})
 	}
 
-	idTitle, err := strconv.Atoi(c.QueryParam("idt"))
-	if err != nil {
-		return c.JSON(http.StatusConflict, model.Response{
-			StatusCode: http.StatusConflict,
-			Message:    banana.GetIdFailed.Error(),
-			Data:       nil,
-		})
-	}
-
-	Result, err := u.UserTitleRepo.SelelectTitleByTitle(c.Request().Context(), idTitle, idUser)
+	level, err := u.LevelRepo.SelelectLevelByUser(c.Request().Context(), idUser)
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -124,24 +90,31 @@ func (u *UserTitleController) SelelectUserTitle(c echo.Context) error {
 			Data:       nil,
 		})
 	}
-	
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
-		Data:       Result,
+		Data:       level,
 	})
 }
 
 //========================================================================================================
 
-func (u *UserTitleController) UpdateUserTitle(c echo.Context) error {
+func (u *LevelController) UpdateLevelById(c echo.Context) error {
+	idLevel, err := strconv.Atoi(c.QueryParam("id"))
+	if err != nil {
+		return c.JSON(http.StatusConflict, model.Response{
+			StatusCode: http.StatusConflict,
+			Message:    banana.GetIdFailed.Error(),
+			Data:       nil,
+		})
+	}
 
-	req := &modetitle.ReqUserTitle{}
+	req := &modelevel.ReqLevel{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
 	if err != nil {
 		return err
 	}
-	req, ok := validatedReq.(*modetitle.ReqUserTitle)
+	req, ok := validatedReq.(*modelevel.ReqLevel)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
 			StatusCode: http.StatusInternalServerError,
@@ -149,26 +122,13 @@ func (u *UserTitleController) UpdateUserTitle(c echo.Context) error {
 			Data:       nil,
 		})
 	}
-	err = u.CustomDate.UnmarshalJSON([]byte(`"` + req.NgayBatDau + `"`)) 
-	if err != nil {
-		fmt.Println("Error parsing NgayBatDau:", err)
-	}
 
-	if req.NgayKetThuc != "" {
-		err = u.CustomDate2.UnmarshalJSON([]byte(`"` + req.NgayKetThuc + `"`)) 
-		if err != nil {
-			fmt.Println("Error parsing NgayKetThuc:", err)
-		}
+	UserLevel := modelevel.ResLevel{
+		TenCapBac: req.TenCapBac,
+		CauTrucLuong: req.CauTrucLuong,
+		ID:           idLevel,
 	}
-
-	res := modetitle.ResUserTitle{
-		IDNhanVien:  req.IDNhanVien,
-		IDChucDanh:  req.IDChucDanh,
-		IDPhongBan:  req.IDPhongBan,
-		NgayBatDau:  u.CustomDate.Time,
-		NgayKetThuc: u.CustomDate2.Time,
-	}
-	Result, err := u.UserTitleRepo.UpdateTitleById(c.Request().Context(), res)
+	level, err := u.LevelRepo.UpdateLevelById(c.Request().Context(), UserLevel)
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -179,13 +139,13 @@ func (u *UserTitleController) UpdateUserTitle(c echo.Context) error {
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
-		Data:       Result,
+		Data:       level,
 	})
 }
 
 // ====================================================================================================================
-func (u *UserTitleController) DeleteUserTitle(c echo.Context) error {
-	idUser, err := strconv.Atoi(c.QueryParam("id"))
+func (u *LevelController) DeleteLevelById(c echo.Context) error {
+	idLevel, err := strconv.Atoi(c.QueryParam("id"))
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -194,16 +154,7 @@ func (u *UserTitleController) DeleteUserTitle(c echo.Context) error {
 		})
 	}
 
-	idTitle, err := strconv.Atoi(c.QueryParam("idt"))
-	if err != nil {
-		return c.JSON(http.StatusConflict, model.Response{
-			StatusCode: http.StatusConflict,
-			Message:    banana.GetIdFailed.Error(),
-			Data:       nil,
-		})
-	}
-
-	result, err := u.UserTitleRepo.DeleteTitleById(c.Request().Context(), idTitle, idUser)
+	result, err := u.LevelRepo.DeleteLevelById(c.Request().Context(), idLevel)
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,

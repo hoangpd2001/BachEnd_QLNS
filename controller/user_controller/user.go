@@ -1,76 +1,62 @@
 package usercontroller
 
 import (
-	//	"BackEnd/mod/banana"
 	"BackEnd/mod/banana"
 	"BackEnd/mod/model"
 	reqUser "BackEnd/mod/model/model_user/req_user"
-	resUser "BackEnd/mod/model/model_user/res_user"
+	resuser "BackEnd/mod/model/model_user/res_user"
 	repouser "BackEnd/mod/repository/repo_user"
-	"strconv"
-
-	//	"BackEnd/mod/security"
+	"BackEnd/mod/utils"
+	"fmt"
 	"net/http"
-
-	//	"strings"
+	"strconv"
 	"time"
 
-	validator "github.com/go-playground/validator/v10"
-	//	"github.com/golang-jwt/jwt"
-
-	//	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/log"
 )
 
 type UseController struct {
-	UserRepo repouser.UserRepo
+	UserRepo   repouser.UserRepo
+	CustomDate utils.CustomDate
+	Bind       utils.Bind
 }
 
 //==============================================================================================================
 
 func (u *UseController) CreatUser(c echo.Context) error {
-	req := reqUser.ReqUser{}
-	if err := c.Bind(&req); err != nil {
-		log.Error(err.Error())
-		return c.JSON(http.StatusBadRequest, model.Response{
-			StatusCode: http.StatusBadRequest,
-			Message:    err.Error(),
-			Data:       nil,
-		})
+	req := &reqUser.ReqUser{}
+	validatedReq, err := u.Bind.BindAndValidate(c, req)
+	if err != nil {
+		return err
 	}
-
-	validato := validator.New()
-	if err := validato.Struct(req); err != nil {
-		log.Error(err.Error())
-		return c.JSON(http.StatusBadRequest, model.Response{
-			StatusCode: http.StatusBadRequest,
-			Message:    err.Error(),
+	req, ok := validatedReq.(*reqUser.ReqUser)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, model.Response{
+			StatusCode: http.StatusInternalServerError,
+			Message:    "Failed to cast validated request",
 			Data:       nil,
 		})
 	}
 	//	hash := security.HashingPasswordFunc(req.Pass)
 	//	role := model.MEMBER.String()
+	err = u.CustomDate.UnmarshalJSON([]byte(`"` + req.NgaySinh + `"`))
+	if err != nil {
+		fmt.Println("Error parsing NgayBatDau:", err)
+	}
+	user := resuser.ResUser{
 
-	//userId, err := uuid.NewUUID()
-	// if err!= nil{
-	// 	log.Error( err.Error())
-	// 	return c.JSON(http.StatusForbidden, model.Response{
-	// 		StatusCode: http.StatusBadRequest,
-	// 			Message:  err.Error(),
-	// 			Data: nil,
-	// 	})
-	// }
-	user := resUser.ResUser{
-		Ten:   req.Ten,
-		Dem:   req.Dem,
-		Ho:    req.Ho,
-		Email: req.Email,
-		LoaiNhanVien: req.LoaiNhanVien,
-		CapBac:       req.CapBac,
-		ChiNhanh:     req.ChiNhanh,
-		NgayBatDau:   time.Now(),
-
+		Ten:            req.Ten,
+		Dem:            req.Dem,
+		Ho:             req.Ho,
+		Email:          req.Email,
+		NgaySinh:       u.CustomDate.Time,
+		GioiTinh:       req.GioiTinh,
+		SDT:            req.SDT,
+		DiaChi:         req.DiaChi,
+		CCCD:           req.CCCD,
+		IDLoaiNhanVien: req.IDLoaiNhanVien,
+		IDCapBac:       req.IDCapBac,
+		NgayBatDau:     time.Now(),
 	}
 	userR, err := u.UserRepo.CreatUser(c.Request().Context(), user)
 	if err != nil {
@@ -229,7 +215,6 @@ func (u *UseController) SelectUserById(c echo.Context) error {
 // 		Data:       userR,
 // 	})
 // }
-
 
 //==============================================================================================================
 
