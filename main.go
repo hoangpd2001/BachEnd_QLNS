@@ -22,7 +22,7 @@ func main() {
 		return func(c echo.Context) error {
 			c.Response().Header().Set("Access-Control-Allow-Origin", "*") // Cho phép từ mọi miền
 			c.Response().Header().Set("Access-Control-Allow-Headers", "Content-Type")
-			c.Response().Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+			c.Response().Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE,OPTIONS")
 
 			// Kiểm tra nếu là phương thức OPTIONS
 			if c.Request().Method == http.MethodOptions {

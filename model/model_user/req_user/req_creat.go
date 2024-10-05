@@ -11,7 +11,6 @@ type ReqCreate struct {
 	CapBac       int       `validate:"required"`
 	ChiNhanh     int       `validate:"required"`
 
-	//thongtin  `validate:"required"`
 	GioiTinh        bool   `validate:""`
 	SDT             string `validate:""`
 	EmailCaNhan     string `validate:""`

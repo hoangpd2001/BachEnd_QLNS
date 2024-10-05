@@ -1,10 +1,10 @@
-package skillcontroller
+package titlecontroller
 
 import (
 	"BackEnd/mod/banana"
 	"BackEnd/mod/model"
-	modelskill "BackEnd/mod/model/model_skill"
-	repository "BackEnd/mod/repository/repo_skill"
+	repotitle "BackEnd/mod/repository/repo_title"
+	modelTitle "BackEnd/mod/model/model_title"
 	"BackEnd/mod/utils"
 	"fmt"
 	"net/http"
@@ -13,36 +13,19 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type SkillUserController struct {
-	SkillUserRepo repository.SkillUserRepo
-	Bind          utils.Bind
-	CustomDate    utils.CustomDate
+type TitleController struct {
+	TitleRepo repotitle.TitleRepo
+	Bind      utils.Bind
 }
 
 // ========================================================================================================
-func (u *SkillUserController) CreatSkillUser(c echo.Context) error {
-	idUser, err := strconv.Atoi(c.QueryParam("id"))
-	if err != nil {
-		return c.JSON(http.StatusConflict, model.Response{
-			StatusCode: http.StatusConflict,
-			Message:    banana.GetIdFailed.Error(),
-			Data:       nil,
-		})
-	}
-	idSkill, err := strconv.Atoi(c.QueryParam("ids"))
-	if err != nil {
-		return c.JSON(http.StatusConflict, model.Response{
-			StatusCode: http.StatusConflict,
-			Message:    banana.GetIdFailed.Error(),
-			Data:       nil,
-		})
-	}
-	req := &modelskill.ReqUserSkill{}
+func (u *TitleController) CreatTitle(c echo.Context) error {
+	req := &modelTitle.ReqTitle{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
 	if err != nil {
 		return err
 	}
-	req, ok := validatedReq.(*modelskill.ReqUserSkill)
+	req, ok := validatedReq.(*modelTitle.ReqTitle)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
 			StatusCode: http.StatusInternalServerError,
@@ -50,14 +33,10 @@ func (u *SkillUserController) CreatSkillUser(c echo.Context) error {
 			Data:       nil,
 		})
 	}
-	err = u.CustomDate.UnmarshalJSON([]byte(req.NgayDanhGia))
-	res := modelskill.ResUserSkill{
-		IDNhanVien:  idUser,
-		IDKyNang:    idSkill,
-		MucDo:       req.MucDo,
-		NgayDanhGia: u.CustomDate.Time,
+	res := modelTitle.ResTitle{
+		TenChucDanh: req.TenChucDanh,
 	}
-	skillResult, err := u.SkillUserRepo.CreatSkillUser(c.Request().Context(), res)
+	userR, err := u.TitleRepo.CreatTitle(c.Request().Context(), res)
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -68,22 +47,14 @@ func (u *SkillUserController) CreatSkillUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
-		Data:       skillResult,
+		Data:       userR,
 	})
 }
 
 // //========================================================================================================
 
-func (u *SkillUserController) SelectSkillUserAll(c echo.Context) error {
-	idUser, err := strconv.Atoi(c.QueryParam("id"))
-	if err != nil {
-		return c.JSON(http.StatusConflict, model.Response{
-			StatusCode: http.StatusConflict,
-			Message:    banana.GetIdFailed.Error(),
-			Data:       nil,
-		})
-	}
-	skillResult, err := u.SkillUserRepo.SelectSkillUserAll(c.Request().Context(), idUser)
+func (u *TitleController) SelectTitleAll(c echo.Context) error {
+	userR, err := u.TitleRepo.SelectTitleAll(c.Request().Context())
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -94,14 +65,14 @@ func (u *SkillUserController) SelectSkillUserAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
-		Data:       skillResult,
+		Data:       userR,
 	})
 }
 
 // //========================================================================================================
 
-func (u *SkillUserController) SelelectSkillUser(c echo.Context) error {
-	idUser, err := strconv.Atoi(c.QueryParam("id"))
+func (u *TitleController) SelelectTitleById(c echo.Context) error {
+	idTitle, err := strconv.Atoi(c.QueryParam("id"))
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -110,16 +81,7 @@ func (u *SkillUserController) SelelectSkillUser(c echo.Context) error {
 		})
 	}
 
-	idSkill, err := strconv.Atoi(c.QueryParam("ids"))
-	if err != nil {
-		return c.JSON(http.StatusConflict, model.Response{
-			StatusCode: http.StatusConflict,
-			Message:    banana.GetIdFailed.Error(),
-			Data:       nil,
-		})
-	}
-
-	skillResult, err := u.SkillUserRepo.SelelectSkillUser(c.Request().Context(), idSkill, idUser)
+	userR, err := u.TitleRepo.SelelectTitleById(c.Request().Context(), idTitle)
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -130,14 +92,14 @@ func (u *SkillUserController) SelelectSkillUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
-		Data:       skillResult,
+		Data:       userR,
 	})
 }
 
 //========================================================================================================
 
-func (u *SkillUserController) UpdateSkillUser(c echo.Context) error {
-	idUser, err := strconv.Atoi(c.QueryParam("id"))
+func (u *TitleController) UpdateTitleById(c echo.Context) error {
+	idTitle, err := strconv.Atoi(c.QueryParam("id"))
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -146,21 +108,12 @@ func (u *SkillUserController) UpdateSkillUser(c echo.Context) error {
 		})
 	}
 
-	idSkill, err := strconv.Atoi(c.QueryParam("ids"))
-	if err != nil {
-		return c.JSON(http.StatusConflict, model.Response{
-			StatusCode: http.StatusConflict,
-			Message:    banana.GetIdFailed.Error(),
-			Data:       nil,
-		})
-	}
-
-	req := &modelskill.ReqUserSkill{}
+	req := &modelTitle.ReqTitle{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
 	if err != nil {
 		return err
 	}
-	req, ok := validatedReq.(*modelskill.ReqUserSkill)
+	req, ok := validatedReq.(*modelTitle.ReqTitle)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
 			StatusCode: http.StatusInternalServerError,
@@ -168,15 +121,12 @@ func (u *SkillUserController) UpdateSkillUser(c echo.Context) error {
 			Data:       nil,
 		})
 	}
-	err = u.CustomDate.UnmarshalJSON([]byte(req.NgayDanhGia))
-	skill := modelskill.ResUserSkill{
-		IDNhanVien:  idUser,
-		IDKyNang:    idSkill,
-		MucDo:       req.MucDo,
-		NgayDanhGia: u.CustomDate.Time,
-		IDKyNangMoi: req.IDKyNang,
+
+	Title := modelTitle.ResTitle{
+		TenChucDanh: req.TenChucDanh,
+		ID:       idTitle,
 	}
-	skillResult, err := u.SkillUserRepo.UpdateSkillById(c.Request().Context(), skill)
+	userR, err := u.TitleRepo.UpdateTitleById(c.Request().Context(), Title)
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -187,13 +137,13 @@ func (u *SkillUserController) UpdateSkillUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
-		Data:       skillResult,
+		Data:       userR,
 	})
 }
 
 // ====================================================================================================================
-func (u *SkillUserController) DeleteSkillUser(c echo.Context) error {
-	idUser, err := strconv.Atoi(c.QueryParam("id"))
+func (u *TitleController) DeleteTitleById(c echo.Context) error {
+	idTitle, err := strconv.Atoi(c.QueryParam("id"))
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -202,16 +152,7 @@ func (u *SkillUserController) DeleteSkillUser(c echo.Context) error {
 		})
 	}
 
-	idSkill, err := strconv.Atoi(c.QueryParam("ids"))
-	if err != nil {
-		return c.JSON(http.StatusConflict, model.Response{
-			StatusCode: http.StatusConflict,
-			Message:    banana.GetIdFailed.Error(),
-			Data:       nil,
-		})
-	}
-
-	result, err := u.SkillUserRepo.DeleteSkillById(c.Request().Context(), idSkill, idUser)
+	result, err := u.TitleRepo.DeleteTitleById(c.Request().Context(), idTitle)
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
