@@ -7,6 +7,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/gommon/log"
 )
@@ -26,11 +27,22 @@ func (u BranchRepo) CreatBranch(context context.Context, branch modelbranch.ResB
 		`
 		INSERT INTO chinhanh(ChiNhanh) VALUES (:ChiNhanh)
 	`
-	_, err := u.sqlDB.NamedExecContext(context, statement, branch)
+	result, err := u.sqlDB.NamedExecContext(context, statement, branch)
+	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1062{
+		log.Error(err.Error())
+		return branch, banana.SameName
+		}
+		log.Error(err.Error())
+		return branch, banana.SererError
+	}
+	BranchID, err := result.LastInsertId()
 	if err != nil {
 		log.Error(err.Error())
-		return branch, banana.UpdateFailed
+		branch.ChiNhanh= ""
+		return branch, err
 	}
+	branch.ID = int(BranchID)
 	return branch, nil
 }
 
@@ -49,7 +61,9 @@ func (u BranchRepo) SelelectBranchById(context context.Context, BranchId int) (m
 	var typeUser modelbranch.ResBranch
 	query := "SELECT * FROM chinhanh WHERE ID=?"
 	err := u.sqlDB.GetContext(context, &typeUser, query, BranchId)
+
 	if err != nil {
+		
 		log.Error(err.Error())
 		return typeUser, banana.GetIdFailed
 	}
@@ -63,6 +77,10 @@ func (u BranchRepo) UpdateTypeById(context context.Context, branch modelbranch.R
 		`
 	_, err := u.sqlDB.NamedExecContext(context, statement, branch)
 	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1062{
+		log.Error(err.Error())
+		return branch, banana.SameName
+	}
 		log.Error(err.Error())
 		return branch, banana.UpdateFailed
 	}
@@ -72,6 +90,10 @@ func (u BranchRepo) DeleteBranchById(context context.Context, BranchId int) (sql
 	query := "DELETE FROM chinhanh WHERE ID = ?"
 	result, err := u.sqlDB.ExecContext(context, query, BranchId)
 	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1451{
+		log.Error(err.Error())
+		return result, banana.ForenkeyErrol
+	}
 		log.Error(err.Error())
 		return result, banana.UpdateFailed
 	}

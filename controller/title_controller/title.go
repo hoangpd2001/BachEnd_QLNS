@@ -22,9 +22,13 @@ type TitleController struct {
 func (u *TitleController) CreatTitle(c echo.Context) error {
 	req := &modelTitle.ReqTitle{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	if err != nil {
-		return err
-	}
+	  if err != nil {
+        return c.JSON(http.StatusBadRequest, model.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    err.Error(),
+            Data:       nil,
+        })
+    }
 	req, ok := validatedReq.(*modelTitle.ReqTitle)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
@@ -110,9 +114,13 @@ func (u *TitleController) UpdateTitleById(c echo.Context) error {
 
 	req := &modelTitle.ReqTitle{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	if err != nil {
-		return err
-	}
+  if err != nil {
+        return c.JSON(http.StatusBadRequest, model.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    err.Error(),
+            Data:       nil,
+        })
+    }
 	req, ok := validatedReq.(*modelTitle.ReqTitle)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{

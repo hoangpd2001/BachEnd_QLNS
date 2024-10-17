@@ -31,9 +31,13 @@ func (u *RelativeController) CreatRelative(c echo.Context) error {
 	req := &reqUser.ReqRelative{}
 
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	if err != nil {
-		return err // Hàm đã tự trả về JSON nếu có lỗi
-	}
+	  if err != nil {
+        return c.JSON(http.StatusBadRequest, model.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    err.Error(),
+            Data:       nil,
+        })
+    }
 	req, ok := validatedReq.(*reqUser.ReqRelative)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
@@ -106,9 +110,13 @@ func (u *RelativeController) UpdateRelativeByUser(c echo.Context) error {
 
 	req := &reqUser.ReqRelative{}
 	validatedReq, err := u.Bind.BindAndValidate(c,req)
-	if err != nil {
-		return err
-	}
+  if err != nil {
+        return c.JSON(http.StatusBadRequest, model.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    err.Error(),
+            Data:       nil,
+        })
+    }
 	req, ok := validatedReq.(*reqUser.ReqRelative)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{

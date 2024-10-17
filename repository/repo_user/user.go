@@ -3,6 +3,7 @@ package repouser
 import (
 	resUser "BackEnd/mod/model/model_user/res_user"
 	"context"
+	"database/sql"
 )
 
 type UserRepo interface {
@@ -17,6 +18,7 @@ type EducationRepo interface {
 	SelectEducationByUser(context context.Context, UserId int) ([]resUser.ResEducation, error)
 	SelectEducationById(context context.Context, EducationId int) (resUser.ResEducation, error)
 	UpdateEducationById(context context.Context, Education resUser.ResEducation) (resUser.ResEducation, error)
+	DeleteEducationById(context context.Context, EducationId int) (sql.Result, error)
 }
 type RelativeRepo interface {
 	CreatRelative(context context.Context, UserRelative resUser.ResRelative) (resUser.ResRelative, error)

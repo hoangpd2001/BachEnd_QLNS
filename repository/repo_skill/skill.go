@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/gommon/log"
 )
@@ -27,8 +28,12 @@ func (u SkillRepo) CreatSkill(context context.Context, UserSkill modelskill.ResS
 	`
 	_, err := u.sqlDB.NamedExecContext(context, statement, UserSkill)
 	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1062 {
+			log.Error(err.Error())
+			return UserSkill, banana.SameName
+		}
 		log.Error(err.Error())
-		return UserSkill, banana.UpdateFailed
+		return UserSkill, banana.SererError
 	}
 	return UserSkill, nil
 }
@@ -62,8 +67,12 @@ func (u SkillRepo) UpdateSkillById(context context.Context, UserSkill modelskill
 		`
 	_, err := u.sqlDB.NamedExecContext(context, statement, UserSkill)
 	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1062 {
+			log.Error(err.Error())
+			return UserSkill, banana.SameName
+		}
 		log.Error(err.Error())
-		return UserSkill, banana.UpdateFailed
+		return UserSkill, banana.SererError
 	}
 	return UserSkill, nil
 }
@@ -71,8 +80,12 @@ func (u SkillRepo) DeleteSkillById(context context.Context, SkillID int) (sql.Re
 	query := "DELETE FROM `kynang` WHERE ID = ?"
 	result, err := u.sqlDB.ExecContext(context, query, SkillID)
 	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1451{
 		log.Error(err.Error())
-		return result, banana.UpdateFailed
+		return result, banana.ForenkeyErrol
+		}
+		log.Error(err.Error())
+		return result, banana.SererError
 	}
 	return result, nil
 }

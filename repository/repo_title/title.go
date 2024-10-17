@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/gommon/log"
 )
@@ -27,8 +28,12 @@ func (u TitleRepo) CreatTitle(context context.Context, Title modeltitle.ResTitle
 	`
 	_, err := u.sqlDB.NamedExecContext(context, statement, Title)
 	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1062 {
+			log.Error(err.Error())
+			return Title, banana.SameName
+		}
 		log.Error(err.Error())
-		return Title, banana.UpdateFailed
+		return Title, banana.SererError
 	}
 	return Title, nil
 }
@@ -62,8 +67,12 @@ func (u TitleRepo) UpdateTitleById(context context.Context, Title modeltitle.Res
 		`
 	_, err := u.sqlDB.NamedExecContext(context, statement, Title)
 	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1062{
 		log.Error(err.Error())
-		return Title, banana.UpdateFailed
+		return Title, banana.SameName
+		}
+		log.Error(err.Error())
+		return Title, banana.SererError
 	}
 	return Title, nil
 }
@@ -71,8 +80,12 @@ func (u TitleRepo) DeleteTitleById(context context.Context, TitleId int) (sql.Re
 	query := "DELETE FROM chucdanh WHERE ID = ?"
 	result, err := u.sqlDB.ExecContext(context, query, TitleId)
 	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1451{
 		log.Error(err.Error())
-		return result, banana.UpdateFailed
+		return result, banana.ForenkeyErrol
+		}
+		log.Error(err.Error())
+		return result, banana.SererError
 	}
 	return result, nil
 }

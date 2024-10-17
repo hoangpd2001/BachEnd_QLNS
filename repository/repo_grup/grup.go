@@ -2,9 +2,11 @@ package repogrup
 
 import (
 	"BackEnd/mod/banana"
+	modelgrup "BackEnd/mod/model/model_grup"
 	"context"
 	"database/sql"
-	modelgrup "BackEnd/mod/model/model_grup"
+
+	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/gommon/log"
 )
@@ -26,8 +28,12 @@ func (u GrupRepo) CreatGrup(context context.Context, NewGrupRepo modelgrup.ResGr
 	`
 	_, err := u.sqlDB.NamedExecContext(context, statement, NewGrupRepo)
 	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1062 {
+			log.Error(err.Error())
+			return NewGrupRepo, banana.SameName
+		}
 		log.Error(err.Error())
-		return NewGrupRepo, banana.UpdateFailed
+		return NewGrupRepo, banana.SererError
 	}
 	return NewGrupRepo, nil
 }
@@ -43,7 +49,6 @@ func (u GrupRepo) SelectGrupAll(context context.Context) ([]modelgrup.ResGrup, e
 	return SliceGrup, nil
 }
 
-
 func (u GrupRepo) UpdateGrup(context context.Context, Grup modelgrup.ResGrup) (modelgrup.ResGrup, error) {
 	statement :=
 		`
@@ -51,8 +56,12 @@ func (u GrupRepo) UpdateGrup(context context.Context, Grup modelgrup.ResGrup) (m
 		`
 	_, err := u.sqlDB.NamedExecContext(context, statement, Grup)
 	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1062{
 		log.Error(err.Error())
-		return Grup, banana.UpdateFailed
+		return Grup, banana.SameName
+		}
+		log.Error(err.Error())
+		return Grup, banana.SererError
 	}
 	return Grup, nil
 }
@@ -60,8 +69,12 @@ func (u GrupRepo) DeleteGrup(context context.Context, GrupId int) (sql.Result, e
 	query := "DELETE FROM nhomnhanvien WHERE ID = ?"
 	result, err := u.sqlDB.ExecContext(context, query, GrupId)
 	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1451{
 		log.Error(err.Error())
-		return result, banana.UpdateFailed
+		return result, banana.ForenkeyErrol
+		}
+		log.Error(err.Error())
+		return result, banana.SererError
 	}
 	return result, nil
 }

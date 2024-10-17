@@ -15,7 +15,7 @@ import (
 
 type GrupController struct {
 	GrupRepo repogrup.GrupRepo
-	Bind      utils.Bind
+	Bind     utils.Bind
 }
 
 // ========================================================================================================
@@ -23,7 +23,11 @@ func (u *GrupController) CreatGrup(c echo.Context) error {
 	req := &modelGrup.ReqGrup{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
 	if err != nil {
-		return err
+		return c.JSON(http.StatusBadRequest, model.Response{
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
+		})
 	}
 	req, ok := validatedReq.(*modelGrup.ReqGrup)
 	if !ok {
@@ -71,7 +75,6 @@ func (u *GrupController) SelectGrupAll(c echo.Context) error {
 
 // //========================================================================================================
 
-
 //========================================================================================================
 
 func (u *GrupController) UpdateGrupById(c echo.Context) error {
@@ -87,7 +90,11 @@ func (u *GrupController) UpdateGrupById(c echo.Context) error {
 	req := &modelGrup.ReqGrup{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
 	if err != nil {
-		return err
+		return c.JSON(http.StatusBadRequest, model.Response{
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
+		})
 	}
 	req, ok := validatedReq.(*modelGrup.ReqGrup)
 	if !ok {
@@ -100,7 +107,7 @@ func (u *GrupController) UpdateGrupById(c echo.Context) error {
 
 	Grup := modelGrup.ResGrup{
 		TenNhom: req.TenNhom,
-		ID:           idGrup,
+		ID:      idGrup,
 	}
 	GrupResult, err := u.GrupRepo.UpdateGrup(c.Request().Context(), Grup)
 	if err != nil {

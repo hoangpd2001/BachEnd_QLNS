@@ -24,9 +24,13 @@ func (u *DepartmentController) CreatDepartment(c echo.Context) error {
 
 	req := &modeldepartment.Reqdepartment{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	if err != nil {
-		return err
-	}
+	  if err != nil {
+        return c.JSON(http.StatusBadRequest, model.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    err.Error(),
+            Data:       nil,
+        })
+    }
 	req, ok := validatedReq.(*modeldepartment.Reqdepartment)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
@@ -58,6 +62,7 @@ func (u *DepartmentController) CreatDepartment(c echo.Context) error {
 // //========================================================================================================
 
 func (u *DepartmentController) SelectDepartmentAll(c echo.Context) error {
+	
 	Result, err := u.DepartmentRepo.SelectDepartmentAll(c.Request().Context())
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
@@ -69,7 +74,7 @@ func (u *DepartmentController) SelectDepartmentAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
-		Data:       Result,
+		Data:       Result, 	
 	})
 }
 
@@ -101,6 +106,31 @@ func (u *DepartmentController) SelelectDepartmentById(c echo.Context) error {
 	})
 }
 
+func (u *DepartmentController) SelelectDepartmentByBranch(c echo.Context) error {
+	idDepartment, err := strconv.Atoi(c.QueryParam("id"))
+	if err != nil {
+		return c.JSON(http.StatusConflict, model.Response{
+			StatusCode: http.StatusConflict,
+			Message:    banana.GetIdFailed.Error(),
+			Data:       nil,
+		})
+	}
+
+
+	skillResult, err := u.DepartmentRepo.SelectDepartmentByBranch(c.Request().Context(), idDepartment)
+	if err != nil {
+		return c.JSON(http.StatusConflict, model.Response{
+			StatusCode: http.StatusConflict,
+			Message:    err.Error(),
+			Data:       nil,
+		})
+	}
+	return c.JSON(http.StatusOK, model.Response{
+		StatusCode: http.StatusOK,
+		Message:    "Thành Công",
+		Data:       skillResult,
+	})
+}
 //========================================================================================================
 
 func (u *DepartmentController) UpdateDepartmentById(c echo.Context) error {
@@ -116,9 +146,13 @@ func (u *DepartmentController) UpdateDepartmentById(c echo.Context) error {
 	}
 
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	if err != nil {
-		return err
-	}
+	  if err != nil {
+        return c.JSON(http.StatusBadRequest, model.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    err.Error(),
+            Data:       nil,
+        })
+    }
 	req, ok := validatedReq.(*modeldepartment.Reqdepartment)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{

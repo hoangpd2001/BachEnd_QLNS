@@ -22,9 +22,13 @@ type TypeController struct {
 func (u *TypeController) CreatType(c echo.Context) error {
 	req := &modetypeuser.ReqTypeUser{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	if err != nil {
-		return err
-	}
+	  if err != nil {
+        return c.JSON(http.StatusBadRequest, model.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    err.Error(),
+            Data:       nil,
+        })
+    }
 	req, ok := validatedReq.(*modetypeuser.ReqTypeUser)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
@@ -110,9 +114,13 @@ func (u *TypeController) UpdateTypeById(c echo.Context) error {
 
 	req := &modetypeuser.ReqTypeUser{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	if err != nil {
-		return err
-	}
+  if err != nil {
+        return c.JSON(http.StatusBadRequest, model.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    err.Error(),
+            Data:       nil,
+        })
+    }
 	req, ok := validatedReq.(*modetypeuser.ReqTypeUser)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{

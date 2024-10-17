@@ -39,9 +39,13 @@ func (u *SkillUserController) CreatSkillUser(c echo.Context) error {
 	}
 	req := &modelskill.ReqUserSkill{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	if err != nil {
-		return err
-	}
+  if err != nil {
+        return c.JSON(http.StatusBadRequest, model.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    err.Error(),
+            Data:       nil,
+        })
+    }
 	req, ok := validatedReq.(*modelskill.ReqUserSkill)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
@@ -50,7 +54,10 @@ func (u *SkillUserController) CreatSkillUser(c echo.Context) error {
 			Data:       nil,
 		})
 	}
-	err = u.CustomDate.UnmarshalJSON([]byte(req.NgayDanhGia))
+	err = u.CustomDate.UnmarshalJSON([]byte(`"` + req.NgayDanhGia + `"`))
+	if err != nil {
+		fmt.Println("Error parsing NgayBatDau:", err)
+	}
 	res := modelskill.ResUserSkill{
 		IDNhanVien:  idUser,
 		IDKyNang:    idSkill,
@@ -84,6 +91,23 @@ func (u *SkillUserController) SelectSkillUserAll(c echo.Context) error {
 		})
 	}
 	skillResult, err := u.SkillUserRepo.SelectSkillUserAll(c.Request().Context(), idUser)
+	if err != nil {
+		return c.JSON(http.StatusConflict, model.Response{
+			StatusCode: http.StatusConflict,
+			Message:    err.Error(),
+			Data:       nil,
+		})
+	}
+	return c.JSON(http.StatusOK, model.Response{
+		StatusCode: http.StatusOK,
+		Message:    "Thành Công",
+		Data:       skillResult,
+	})
+}
+
+func (u *SkillUserController) SelectSkillUser(c echo.Context) error {
+
+	skillResult, err := u.SkillUserRepo.SelectSkillUser(c.Request().Context())
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -157,9 +181,13 @@ func (u *SkillUserController) UpdateSkillUser(c echo.Context) error {
 
 	req := &modelskill.ReqUserSkill{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	if err != nil {
-		return err
-	}
+	  if err != nil {
+        return c.JSON(http.StatusBadRequest, model.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    err.Error(),
+            Data:       nil,
+        })
+    }
 	req, ok := validatedReq.(*modelskill.ReqUserSkill)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
@@ -168,13 +196,15 @@ func (u *SkillUserController) UpdateSkillUser(c echo.Context) error {
 			Data:       nil,
 		})
 	}
-	err = u.CustomDate.UnmarshalJSON([]byte(req.NgayDanhGia))
+	err = u.CustomDate.UnmarshalJSON([]byte(`"` + req.NgayDanhGia + `"`))
+	if err != nil {
+		fmt.Println("Error parsing NgayBatDau:", err)
+	}
 	skill := modelskill.ResUserSkill{
 		IDNhanVien:  idUser,
 		IDKyNang:    idSkill,
 		MucDo:       req.MucDo,
 		NgayDanhGia: u.CustomDate.Time,
-		IDKyNangMoi: req.IDKyNang,
 	}
 	skillResult, err := u.SkillUserRepo.UpdateSkillById(c.Request().Context(), skill)
 	if err != nil {

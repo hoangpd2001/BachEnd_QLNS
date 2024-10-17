@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/gommon/log"
 )
@@ -27,6 +28,10 @@ func (u TypeRepo) CreatTYpe(context context.Context, UserType modetypeuser.ResTy
 	`
 	_, err := u.sqlDB.NamedExecContext(context, statement, UserType)
 	if err != nil {
+			if err.(*mysql.MySQLError).Number == 1062{
+		log.Error(err.Error())
+		return UserType, banana.SameName
+		}
 		log.Error(err.Error())
 		return UserType, banana.UpdateFailed
 	}
@@ -62,8 +67,12 @@ func (u TypeRepo) UpdateTypeById(context context.Context, UserType modetypeuser.
 		`
 	_, err := u.sqlDB.NamedExecContext(context, statement, UserType)
 	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1062{
 		log.Error(err.Error())
-		return UserType, banana.UpdateFailed
+		return UserType, banana.SameName
+	}
+		log.Error(err.Error())
+		return UserType, banana.SererError
 	}
 	return UserType, nil
 }
@@ -71,8 +80,12 @@ func (u TypeRepo) DeleteTypeById(context context.Context, TypeID int) (sql.Resul
 	query := "DELETE FROM `loainhanvien` WHERE ID = ?"
 	result, err := u.sqlDB.ExecContext(context, query, TypeID)
 	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1451{
 		log.Error(err.Error())
-		return result, banana.UpdateFailed
+		return result, banana.ForenkeyErrol
+	}
+		log.Error(err.Error())
+		return result, banana.SererError
 	}
 	return result, nil
 }

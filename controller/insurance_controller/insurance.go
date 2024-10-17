@@ -1,10 +1,11 @@
-package branchcontroller
+package insurancecontroller
+
 
 import (
 	"BackEnd/mod/banana"
 	"BackEnd/mod/model"
-	modelbranch "BackEnd/mod/model/model_Branch"
-	repobranch "BackEnd/mod/repository/repo_branch"
+	modelInsurance "BackEnd/mod/model/mode_insurance"
+	repository "BackEnd/mod/repository/repo_insurance"
 	"BackEnd/mod/utils"
 	"fmt"
 	"net/http"
@@ -13,56 +14,37 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type BranchController struct {
-	BranchRepo repobranch.BranchRepo
-	Bind     utils.Bind
+type InsuranceController struct {
+	InsuranceRepo repository.InsuranceRepo
+	Bind      utils.Bind
 }
 
 // ========================================================================================================
-func (u *BranchController) CreatBranch(c echo.Context) error {
-    req := &modelbranch.ReqBranch{}
-    validatedReq, err := u.Bind.BindAndValidate(c, req)
-    if err != nil {
+func (u *InsuranceController) CreatInsurance(c echo.Context) error {
+	req := &modelInsurance.ReqInsurance{}
+	validatedReq, err := u.Bind.BindAndValidate(c, req)
+	  if err != nil {
         return c.JSON(http.StatusBadRequest, model.Response{
             StatusCode: http.StatusBadRequest,
             Message:    err.Error(),
             Data:       nil,
         })
     }
-    
-
-    req, ok := validatedReq.(*modelbranch.ReqBranch)
-    if !ok {
-        return c.JSON(http.StatusInternalServerError, model.Response{
-            StatusCode: http.StatusInternalServerError,
-            Message:    "Failed to cast validated request",
-            Data:       nil,
-        })
-    }
-    res := modelbranch.ResBranch{
-        ChiNhanh: req.ChiNhanh,
-    }
-    userR, err := u.BranchRepo.CreatBranch(c.Request().Context(), res)
-    if err != nil {
-        return c.JSON(http.StatusConflict, model.Response{
-            StatusCode: http.StatusConflict,
-            Message:    err.Error(),
-            Data:       nil,
-        })
-    }
-
-    // Trả về kết quả thành công
-    return c.JSON(http.StatusOK, model.Response{
-        StatusCode: http.StatusOK,
-        Message:    "Thành Công",
-        Data:       userR,
-    })
-}
-
-// //========================================================================================================
-
-func (u *BranchController) SelectBranchAll(c echo.Context) error {
-	userR, err := u.BranchRepo.SelectBranchAll(c.Request().Context())
+	req, ok := validatedReq.(*modelInsurance.ReqInsurance)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, model.Response{
+			StatusCode: http.StatusInternalServerError,
+			Message:    "Failed to cast validated request",
+			Data:       nil,
+		})
+	}
+	res := modelInsurance.ResInsurance{
+		TenBaoHiem: req.TenBaoHiem,
+		NhaCungCap: req.NhaCungCap,
+		NoiDangKi: req.NoiDangKi,
+		TyLePhi: req.TyLePhi,
+	}
+	InsuranceResult, err := u.InsuranceRepo.CreatInsurance(c.Request().Context(), res)
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -73,14 +55,32 @@ func (u *BranchController) SelectBranchAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
-		Data:       userR,
+		Data:       InsuranceResult,
 	})
 }
 
 // //========================================================================================================
 
-func (u *BranchController) SelelectBranchById(c echo.Context) error {
-	idBranch, err := strconv.Atoi(c.QueryParam("id"))
+func (u *InsuranceController) SelectInsuranceAll(c echo.Context) error {
+	InsuranceResult, err := u.InsuranceRepo.SelectInsuranceAll(c.Request().Context())
+	if err != nil {
+		return c.JSON(http.StatusConflict, model.Response{
+			StatusCode: http.StatusConflict,
+			Message:    err.Error(),
+			Data:       nil,
+		})
+	}
+	return c.JSON(http.StatusOK, model.Response{
+		StatusCode: http.StatusOK,
+		Message:    "Thành Công",
+		Data:       InsuranceResult,
+	})
+}
+
+// //========================================================================================================
+
+func (u *InsuranceController) SelelectInsuranceById(c echo.Context) error {
+	idInsurance, err := strconv.Atoi(c.QueryParam("id"))
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -89,7 +89,7 @@ func (u *BranchController) SelelectBranchById(c echo.Context) error {
 		})
 	}
 
-	userR, err := u.BranchRepo.SelelectBranchById(c.Request().Context(), idBranch)
+	InsuranceResult, err := u.InsuranceRepo.SelelectInsuranceById(c.Request().Context(), idInsurance)
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -100,14 +100,14 @@ func (u *BranchController) SelelectBranchById(c echo.Context) error {
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
-		Data:       userR,
+		Data:       InsuranceResult,
 	})
 }
 
 //========================================================================================================
 
-func (u *BranchController) UpdateBranchById(c echo.Context) error {
-	idBranch, err := strconv.Atoi(c.QueryParam("id"))
+func (u *InsuranceController) UpdateInsuranceById(c echo.Context) error {
+	idInsurance, err := strconv.Atoi(c.QueryParam("id"))
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -116,17 +116,16 @@ func (u *BranchController) UpdateBranchById(c echo.Context) error {
 		})
 	}
 
-	req := &modelbranch.ReqBranch{}
+	req := &modelInsurance.ReqInsurance{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	if err != nil {
+	  if err != nil {
         return c.JSON(http.StatusBadRequest, model.Response{
             StatusCode: http.StatusBadRequest,
             Message:    err.Error(),
             Data:       nil,
         })
     }
-    
-	req, ok := validatedReq.(*modelbranch.ReqBranch)
+	req, ok := validatedReq.(*modelInsurance.ReqInsurance)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
 			StatusCode: http.StatusInternalServerError,
@@ -135,11 +134,14 @@ func (u *BranchController) UpdateBranchById(c echo.Context) error {
 		})
 	}
 
-	Branch := modelbranch.ResBranch{
-		ChiNhanh: req.ChiNhanh,
-		ID:           idBranch,
+	Insurance := modelInsurance.ResInsurance{
+		TenBaoHiem: req.TenBaoHiem,
+		NhaCungCap: req.NhaCungCap,
+		NoiDangKi: req.NoiDangKi,
+		TyLePhi: req.TyLePhi,
+		ID:           idInsurance,
 	}
-	result, err := u.BranchRepo.UpdateTypeById(c.Request().Context(), Branch)
+	InsuranceResult, err := u.InsuranceRepo.UpdateInsuranceById(c.Request().Context(), Insurance)
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -150,13 +152,13 @@ func (u *BranchController) UpdateBranchById(c echo.Context) error {
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
-		Data:       result,
+		Data:       InsuranceResult,
 	})
 }
 
 // ====================================================================================================================
-func (u *BranchController) DeleteBranchById(c echo.Context) error {
-	idBranch, err := strconv.Atoi(c.QueryParam("id"))
+func (u *InsuranceController) DeleteInsuranceById(c echo.Context) error {
+	idInsurance, err := strconv.Atoi(c.QueryParam("id"))
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -165,7 +167,7 @@ func (u *BranchController) DeleteBranchById(c echo.Context) error {
 		})
 	}
 
-	result, err := u.BranchRepo.DeleteBranchById(c.Request().Context(), idBranch)
+	result, err := u.InsuranceRepo.DeleteInsuranceById(c.Request().Context(), idInsurance)
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,

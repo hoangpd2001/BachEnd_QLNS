@@ -10,6 +10,7 @@ type ResUserTitle struct {
 	IDNhanVien  int       `db:"IDNhanVien"        json:"IDNhanVien,omitempty"`
 	IDChucDanh  int       `db:"IDChucDanh"        json:"IDChucDanh,omitempty"`
 	IDPhongBan  int       `db:"IDPhongBan"        json:"IDPhongBan,omitempty"`
+	IDChiNhanh int       `db:"IDChiNhanh"        json:"IDChiNhanh,omitempty"`
 	Ten         string    `db:"Ten"               json:"Ten,omitempty"`
 	Dem         string    `db:"Dem"               json:"Dem,omitempty"`
 	Ho          string    `db:"Ho"                json:"Ho,omitempty"`

@@ -36,10 +36,11 @@ func (u UserTitleRepo) CreatUserTitle(context context.Context, UserTitle modelti
 
 func (u UserTitleRepo) SelectUserTitleAll(context context.Context, IdUser int) ([]modeltitle.ResUserTitle, error) {
 	var SliceUserTitle []modeltitle.ResUserTitle
-	query := `SELECT IDNhanVien, IDChucDanh, nhanvien_chucdanh.NgayBatDau, nhanvien_chucdanh.NgayKetThuc,
+	query := `SELECT IDNhanVien, IDChucDanh, IDChiNhanh,nhanvien_chucdanh.NgayBatDau, nhanvien_chucdanh.NgayKetThuc,
 	 IDPhongBan, nhanvien.Ho,nhanvien.Dem,nhanvien.Ten, chucdanh.TenChucDanh ,
-	 phongban.TenPhongBan FROM nhanvien_chucdanh, nhanvien, chucdanh, phongban
-	  WHERE nhanvien_chucdanh.IDNhanVien = nhanvien.ID and nhanvien_chucdanh.IDChucDanh=chucdanh.ID 
+	 phongban.TenPhongBan FROM nhanvien_chucdanh, nhanvien, chucdanh, phongban,chinhanh
+	  WHERE nhanvien_chucdanh.IDNhanVien = nhanvien.ID and nhanvien_chucdanh.IDChucDanh=chucdanh.ID
+	  and chinhanh.ID = phongban.IDChiNhanh 
 	  and nhanvien_chucdanh.IDPhongBan =phongban.ID and IDNhanVien = ?`
 	err := u.sqlDB.SelectContext(context, &SliceUserTitle, query,IdUser)
 	if err != nil {
@@ -67,7 +68,7 @@ func (u UserTitleRepo) SelelectTitleByTitle(context context.Context, TitleId int
 func (u UserTitleRepo) UpdateTitleById(context context.Context, Title modeltitle.ResUserTitle) (modeltitle.ResUserTitle, error) {
 	statement :=
 		`
-		UPDATE nhanvien_chucdanh SET NgayBatDau=:NgayBatDau,NgayKetThuc=:NgayKetThuc,IDPhongBan=:IDPhongBan WHERE IDNhanVien=:IDNhanVien and IDChucDanh=:IDChucDanh
+		UPDATE nhanvien_chucdanh SET NgayBatDau=:NgayBatDau,NgayKetThuc=:NgayKetThuc WHERE IDNhanVien=:IDNhanVien and IDChucDanh=:IDChucDanh and IDPhongBan=:IDPhongBan
 		`
 	_, err := u.sqlDB.NamedExecContext(context, statement, Title)
 	if err != nil {
@@ -76,9 +77,9 @@ func (u UserTitleRepo) UpdateTitleById(context context.Context, Title modeltitle
 	}
 	return Title, nil
 }
-func (u UserTitleRepo) DeleteTitleById(context context.Context, TitleId int,IdUser int) (sql.Result, error) {
-	query := "DELETE FROM nhanvien_chucdanh WHERE IDNhanVien=? and IDChucDanh=?"
-	result, err := u.sqlDB.ExecContext(context, query,IdUser, TitleId)
+func (u UserTitleRepo) DeleteTitleById(context context.Context, TitleId int,IdUser int, idpb int) (sql.Result, error) {
+	query := "DELETE FROM nhanvien_chucdanh WHERE IDNhanVien=? and IDChucDanh=? and IDPhongBan=?"  
+	result, err := u.sqlDB.ExecContext(context, query,IdUser, TitleId, idpb)
 	if err != nil {
 		log.Error(err.Error())
 		return result, banana.UpdateFailed

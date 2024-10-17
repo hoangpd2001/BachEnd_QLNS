@@ -1,10 +1,11 @@
-package titlecontroller
+package insurancecontroller
+
 
 import (
 	"BackEnd/mod/banana"
 	"BackEnd/mod/model"
-	modetitle "BackEnd/mod/model/model_title"
-	repotitle "BackEnd/mod/repository/repo_title"
+	modelinsurance "BackEnd/mod/model/mode_insurance"
+	repository "BackEnd/mod/repository/repo_insurance"
 	"BackEnd/mod/utils"
 	"fmt"
 	"net/http"
@@ -13,26 +14,41 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type UserTitleController struct {
-	UserTitleRepo repotitle.UserTitleRepo
+type InsuranceUserController struct {
+	InsuranceUserRepo repository.InsuranceUserRepo
 	Bind          utils.Bind
 	CustomDate    utils.CustomDate
-	CustomDate2   utils.CustomDate
+	CustomDate2    utils.CustomDate
 }
 
 // ========================================================================================================
-func (u *UserTitleController) CreatUserTitle(c echo.Context) error {
-
-	req := &modetitle.ReqUserTitle{}
+func (u *InsuranceUserController) CreatInsuranceUser(c echo.Context) error {
+	idUser, err := strconv.Atoi(c.QueryParam("id"))
+	if err != nil {
+		return c.JSON(http.StatusConflict, model.Response{
+			StatusCode: http.StatusConflict,
+			Message:    banana.GetIdFailed.Error(),
+			Data:       nil,
+		})
+	}
+	idInsurance, err := strconv.Atoi(c.QueryParam("ids"))
+	if err!= nil {
+		return c.JSON(http.StatusConflict, model.Response{
+			StatusCode: http.StatusConflict,
+			Message:    banana.GetIdFailed.Error(),
+			Data:       nil,
+		})
+	}
+	req := &modelinsurance.ReqUserInsurance{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	  if err != nil {
+  if err != nil {
         return c.JSON(http.StatusBadRequest, model.Response{
             StatusCode: http.StatusBadRequest,
             Message:    err.Error(),
             Data:       nil,
         })
     }
-	req, ok := validatedReq.(*modetitle.ReqUserTitle)
+	req, ok := validatedReq.(*modelinsurance.ReqUserInsurance)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
 			StatusCode: http.StatusInternalServerError,
@@ -40,25 +56,21 @@ func (u *UserTitleController) CreatUserTitle(c echo.Context) error {
 			Data:       nil,
 		})
 	}
-	err = u.CustomDate.UnmarshalJSON([]byte(`"` + req.NgayBatDau + `"`))
+	err = u.CustomDate.UnmarshalJSON([]byte(`"` + req.NgayDong + `"`))
 	if err != nil {
 		fmt.Println("Error parsing NgayBatDau:", err)
 	}
-
-
-		err = u.CustomDate2.UnmarshalJSON([]byte(`"` + req.NgayKetThuc + `"`))
-		if err != nil {
-			fmt.Println("Error parsing NgayKetThuc:", err)
-		}
-	
-	res := modetitle.ResUserTitle{
-		IDNhanVien:  req.IDNhanVien,
-		IDChucDanh:  req.IDChucDanh,
-		IDPhongBan:  req.IDPhongBan,
-		NgayBatDau:  u.CustomDate.Time,
-		NgayKetThuc: u.CustomDate2.Time,
+	err = u.CustomDate2.UnmarshalJSON([]byte(`"` + req.NgayHetHan + `"`))
+	if err != nil {
+		fmt.Println("Error parsing NgayBatDau:", err)
 	}
-	Result, err := u.UserTitleRepo.CreatUserTitle(c.Request().Context(), res)
+	res := modelinsurance.ResUserInsurance{
+		IDNhanVien:  idUser,
+		IDBaoHiem:    idInsurance,
+		NgayDong:    u.CustomDate.Time ,
+		NgayHetHan: u.CustomDate2.Time,
+	}
+	insuranceResult, err := u.InsuranceUserRepo.CreatInsuranceUser(c.Request().Context(), res)
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -69,22 +81,14 @@ func (u *UserTitleController) CreatUserTitle(c echo.Context) error {
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
-		Data:       Result,
+		Data:       insuranceResult,
 	})
 }
 
 // //========================================================================================================
 
-func (u *UserTitleController) SelectUserTitleAll(c echo.Context) error {
-	idUser, err := strconv.Atoi(c.QueryParam("id"))
-	if err != nil {
-		return c.JSON(http.StatusConflict, model.Response{
-			StatusCode: http.StatusConflict,
-			Message:    banana.GetIdFailed.Error(),
-			Data:       nil,
-		})
-	}
-	Result, err := u.UserTitleRepo.SelectUserTitleAll(c.Request().Context(), idUser)
+func (u *InsuranceUserController) SelectInsuranceUserAll(c echo.Context) error {
+	insuranceResult, err := u.InsuranceUserRepo.SelectInsuranceUserAll(c.Request().Context())
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -95,13 +99,11 @@ func (u *UserTitleController) SelectUserTitleAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
-		Data:       Result,
+		Data:       insuranceResult,
 	})
 }
 
-// //========================================================================================================
-
-func (u *UserTitleController) SelelectUserTitle(c echo.Context) error {
+func (u *InsuranceUserController) SelectInsuranceUser(c echo.Context) error {
 	idUser, err := strconv.Atoi(c.QueryParam("id"))
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
@@ -111,7 +113,25 @@ func (u *UserTitleController) SelelectUserTitle(c echo.Context) error {
 		})
 	}
 
-	idTitle, err := strconv.Atoi(c.QueryParam("idt"))
+	insuranceResult, err := u.InsuranceUserRepo.SelectInsuranceUserByUser(c.Request().Context(),idUser)
+	if err != nil {
+		return c.JSON(http.StatusConflict, model.Response{
+			StatusCode: http.StatusConflict,
+			Message:    err.Error(),
+			Data:       nil,
+		})
+	}
+	return c.JSON(http.StatusOK, model.Response{
+		StatusCode: http.StatusOK,
+		Message:    "Thành Công",
+		Data:       insuranceResult,
+	})
+}
+
+// //========================================================================================================
+
+func (u *InsuranceUserController) SelelectInsuranceUserOne(c echo.Context) error {
+	idUser, err := strconv.Atoi(c.QueryParam("id"))
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -120,7 +140,16 @@ func (u *UserTitleController) SelelectUserTitle(c echo.Context) error {
 		})
 	}
 
-	Result, err := u.UserTitleRepo.SelelectTitleByTitle(c.Request().Context(), idTitle, idUser)
+	idInsurance, err := strconv.Atoi(c.QueryParam("ids"))
+	if err!= nil {
+		return c.JSON(http.StatusConflict, model.Response{
+			StatusCode: http.StatusConflict,
+			Message:    banana.GetIdFailed.Error(),
+			Data:       nil,
+		})
+	}
+
+	insuranceResult, err := u.InsuranceUserRepo.SelelectInsuranceUserByOne(c.Request().Context(), idInsurance, idUser)
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -128,19 +157,35 @@ func (u *UserTitleController) SelelectUserTitle(c echo.Context) error {
 			Data:       nil,
 		})
 	}
-	
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
-		Data:       Result,
+		Data:       insuranceResult,
 	})
 }
 
 //========================================================================================================
 
-func (u *UserTitleController) UpdateUserTitle(c echo.Context) error {
+func (u *InsuranceUserController) UpdateInsuranceUser(c echo.Context) error {
+	idUser, err := strconv.Atoi(c.QueryParam("id"))
+	if err != nil {
+		return c.JSON(http.StatusConflict, model.Response{
+			StatusCode: http.StatusConflict,
+			Message:    banana.GetIdFailed.Error(),
+			Data:       nil,
+		})
+	}
 
-	req := &modetitle.ReqUserTitle{}
+	idInsurance, err := strconv.Atoi(c.QueryParam("ids"))
+	if err!= nil {
+		return c.JSON(http.StatusConflict, model.Response{
+			StatusCode: http.StatusConflict,
+			Message:    banana.GetIdFailed.Error(),
+			Data:       nil,
+		})
+	}
+
+	req := &modelinsurance.ReqUserInsurance{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
 	  if err != nil {
         return c.JSON(http.StatusBadRequest, model.Response{
@@ -149,7 +194,7 @@ func (u *UserTitleController) UpdateUserTitle(c echo.Context) error {
             Data:       nil,
         })
     }
-	req, ok := validatedReq.(*modetitle.ReqUserTitle)
+	req, ok := validatedReq.(*modelinsurance.ReqUserInsurance)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
 			StatusCode: http.StatusInternalServerError,
@@ -157,26 +202,21 @@ func (u *UserTitleController) UpdateUserTitle(c echo.Context) error {
 			Data:       nil,
 		})
 	}
-	err = u.CustomDate.UnmarshalJSON([]byte(`"` + req.NgayBatDau + `"`)) 
+	err = u.CustomDate.UnmarshalJSON([]byte(`"` + req.NgayDong + `"`))
 	if err != nil {
 		fmt.Println("Error parsing NgayBatDau:", err)
 	}
-
-	if req.NgayKetThuc != "" {
-		err = u.CustomDate2.UnmarshalJSON([]byte(`"` + req.NgayKetThuc + `"`)) 
-		if err != nil {
-			fmt.Println("Error parsing NgayKetThuc:", err)
-		}
+	err = u.CustomDate2.UnmarshalJSON([]byte(`"` + req.NgayHetHan + `"`))
+	if err != nil {
+		fmt.Println("Error parsing NgayBatDau:", err)
 	}
-
-	res := modetitle.ResUserTitle{
-		IDNhanVien:  req.IDNhanVien,
-		IDChucDanh:  req.IDChucDanh,
-		IDPhongBan:  req.IDPhongBan,
-		NgayBatDau:  u.CustomDate.Time,
-		NgayKetThuc: u.CustomDate2.Time,
+	Insurance := modelinsurance.ResUserInsurance{
+		IDNhanVien:  idUser,
+		IDBaoHiem:    idInsurance,
+		NgayDong:    u.CustomDate.Time ,
+		NgayHetHan: u.CustomDate2.Time,
 	}
-	Result, err := u.UserTitleRepo.UpdateTitleById(c.Request().Context(), res)
+	InsuranceResult, err := u.InsuranceUserRepo.UpdateInsuranceById(c.Request().Context(), Insurance)
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -187,12 +227,12 @@ func (u *UserTitleController) UpdateUserTitle(c echo.Context) error {
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
-		Data:       Result,
+		Data:       InsuranceResult,
 	})
 }
 
 // ====================================================================================================================
-func (u *UserTitleController) DeleteUserTitle(c echo.Context) error {
+func (u *InsuranceUserController) DeleteInsuranceUser(c echo.Context) error {
 	idUser, err := strconv.Atoi(c.QueryParam("id"))
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
@@ -202,7 +242,7 @@ func (u *UserTitleController) DeleteUserTitle(c echo.Context) error {
 		})
 	}
 
-	idTitle, err := strconv.Atoi(c.QueryParam("idt"))
+	idInsurance, err := strconv.Atoi(c.QueryParam("ids"))
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,
@@ -210,15 +250,8 @@ func (u *UserTitleController) DeleteUserTitle(c echo.Context) error {
 			Data:       nil,
 		})
 	}
-	idp, err := strconv.Atoi(c.QueryParam("idp"))
-	if err != nil {
-		return c.JSON(http.StatusConflict, model.Response{
-			StatusCode: http.StatusConflict,
-			Message:    banana.GetIdFailed.Error(),
-			Data:       nil,
-		})
-	}
-	result, err := u.UserTitleRepo.DeleteTitleById(c.Request().Context(), idTitle, idUser, idp)
+
+	result, err := u.InsuranceUserRepo.DeleteInsuranceById(c.Request().Context(), idInsurance,idUser)
 	if err != nil {
 		return c.JSON(http.StatusConflict, model.Response{
 			StatusCode: http.StatusConflict,

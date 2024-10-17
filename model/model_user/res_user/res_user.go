@@ -1,7 +1,7 @@
 package resuser
 
 import (
-	"database/sql"
+	
 	"time"
 )
 
@@ -17,27 +17,27 @@ type ResUser struct {
 	DiaChi         string    `db:"DiaChi"         json:"DiaChi,omitempty"`
 	CCCD           string    `db:"CCCD"           json:"CCCD,omitempty"`
 
-	LoaiNhanVien   sql.NullString    `db:"LoaiNhanVien"   json:"LoaiNhanVien,omitempty"`
-	IDLoaiNhanVien sql.NullInt64       `db:"IDLoaiNhanVien" json:"IDLoaiNhanVien,omitempty"`
+	LoaiNhanVien  string    `db:"LoaiNhanVien"   json:"LoaiNhanVien,omitempty"`
+	IDLoaiNhanVien int      `db:"IDLoaiNhanVien" json:"IDLoaiNhanVien,omitempty"`
 	
-	IDCapBac       sql.NullInt64       `db:"IDCapBac"       json:"IDCapBac,omitempty"`
-	TenCapBac      sql.NullString    `db:"TenCapBac"      json:"TenCapBac,omitempty"`
+	IDCapBac       int      `db:"IDCapBac"       json:"IDCapBac,omitempty"`
+	TenCapBac     string    `db:"TenCapBac"      json:"TenCapBac,omitempty"`
 	
-	IDChiNhanh     sql.NullInt64       `db:"IDChiNhanh"     json:"IDChiNhanh,omitempty"`
-	ChiNhanh       sql.NullString    `db:"ChiNhanh"       json:"ChiNhanh,omitempty"`
+	IDChiNhanh     int      `db:"IDChiNhanh"     json:"IDChiNhanh,omitempty"`
+	ChiNhanh      string    `db:"ChiNhanh"       json:"ChiNhanh,omitempty"`
 	
-	IDPhongBan     sql.NullInt64       `db:"IDPhongBan"     json:"IDPhongBan,omitempty"`
-	TenPhongBan    sql.NullString       `db:"TenPhongBan"    json:"TenPhongBan,omitempty"`
+	IDPhongBan     int      `db:"IDPhongBan"     json:"IDPhongBan,omitempty"`
+	TenPhongBan   string       `db:"TenPhongBan"    json:"TenPhongBan,omitempty"`
 	
-	IDChucDanh     sql.NullInt64       `db:"IDChucDanh"     json:"IDChucDanh,omitempty"`
-	TenChucDanh    sql.NullString    `db:"TenChucDanh"    json:"TenChucDanh,omitempty"`
+	IDChucDanh     int      `db:"IDChucDanh"     json:"IDChucDanh,omitempty"`
+	TenChucDanh   string    `db:"TenChucDanh"    json:"TenChucDanh,omitempty"`
 	
 	
 	NgayBatDau     time.Time `db:"NgayBatDau"     json:"NgayBatDau,omitempty"`
 	NgayKetThuc    time.Time `db:"NgayKetThuc"    json:"NgayKetThuc,omitempty"`
 
-	TenNguoiThan    sql.NullString `db:"TenNguoiThan"     json:"TenNguoiThan,omitempty"`
-	SDTNguoiThan    sql.NullString `db:"SDTNguoiThan"     json:"SDTNguoiThan,omitempty"`
-	DiaChiNguoiThan sql.NullString `db:"DiaChiNguoiThan"  json:"DiaChiNguoiThan,omitempty"`
-	QuanHe          sql.NullString `db:"QuanHe"           json:"QuanHe,omitempty"`
+	TenNguoiThan   string `db:"TenNguoiThan"     json:"TenNguoiThan,omitempty"`
+	SDTNguoiThan   string `db:"SDTNguoiThan"     json:"SDTNguoiThan,omitempty"`
+	DiaChiNguoiThan string `db:"DiaChiNguoiThan"  json:"DiaChiNguoiThan,omitempty"`
+	QuanHe         string `db:"QuanHe"           json:"QuanHe,omitempty"`
 }

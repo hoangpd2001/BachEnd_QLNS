@@ -22,9 +22,13 @@ type LevelController struct {
 func (u *LevelController) CreatLevel(c echo.Context) error {
 	req := &modelevel.ReqLevel{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	if err != nil {
-		return err
-	}
+	  if err != nil {
+        return c.JSON(http.StatusBadRequest, model.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    err.Error(),
+            Data:       nil,
+        })
+    }
 	req, ok := validatedReq.(*modelevel.ReqLevel)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
@@ -111,9 +115,13 @@ func (u *LevelController) UpdateLevelById(c echo.Context) error {
 
 	req := &modelevel.ReqLevel{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	if err != nil {
-		return err
-	}
+	  if err != nil {
+        return c.JSON(http.StatusBadRequest, model.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    err.Error(),
+            Data:       nil,
+        })
+    }
 	req, ok := validatedReq.(*modelevel.ReqLevel)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{

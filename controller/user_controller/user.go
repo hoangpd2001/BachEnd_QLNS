@@ -26,9 +26,13 @@ type UseController struct {
 func (u *UseController) CreatUser(c echo.Context) error {
 	req := &reqUser.ReqUser{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	if err != nil {
-		return err
-	}
+	  if err != nil {
+        return c.JSON(http.StatusBadRequest, model.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    err.Error(),
+            Data:       nil,
+        })
+    }
 	req, ok := validatedReq.(*reqUser.ReqUser)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{

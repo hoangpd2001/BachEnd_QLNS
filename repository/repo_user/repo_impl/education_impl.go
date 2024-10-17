@@ -5,7 +5,7 @@ import (
 	res_user "BackEnd/mod/model/model_user/res_user"
 	repouser "BackEnd/mod/repository/repo_user"
 	"context"
-
+	"database/sql"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/gommon/log"
 )
@@ -71,4 +71,15 @@ func (u EducationRepoImpl) UpdateEducationById(context context.Context, UserEdu 
 		return UserEdu, banana.UpdateFailed
 	}
 	return UserEdu, nil
+}
+
+func (u EducationRepoImpl) DeleteEducationById(context context.Context, UserId int) (sql.Result, error) {
+
+	query := "Delete from nhanvien_hocvan where ID = ?"
+	result, err := u.sqlDB.ExecContext(context, query, UserId)
+	if err != nil {
+		log.Error(err.Error())
+		return result, banana.UpdateFailed
+	}
+	return result, nil
 }

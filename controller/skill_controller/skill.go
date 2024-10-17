@@ -22,9 +22,13 @@ type SkillController struct {
 func (u *SkillController) CreatSkill(c echo.Context) error {
 	req := &modelskill.ReqSkill{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	if err != nil {
-		return err
-	}
+	  if err != nil {
+        return c.JSON(http.StatusBadRequest, model.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    err.Error(),
+            Data:       nil,
+        })
+    }
 	req, ok := validatedReq.(*modelskill.ReqSkill)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
@@ -111,9 +115,13 @@ func (u *SkillController) UpdateSkillById(c echo.Context) error {
 
 	req := &modelskill.ReqSkill{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	if err != nil {
-		return err
-	}
+	  if err != nil {
+        return c.JSON(http.StatusBadRequest, model.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    err.Error(),
+            Data:       nil,
+        })
+    }
 	req, ok := validatedReq.(*modelskill.ReqSkill)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{

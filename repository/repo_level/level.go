@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/gommon/log"
 )
@@ -27,8 +28,12 @@ func (u LevelRepo) CreatLevel(context context.Context, level modelevel.ResLevel)
 	`
 	_, err := u.sqlDB.NamedExecContext(context, statement, level)
 	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1062 {
+			log.Error(err.Error())
+			return level, banana.SameName
+		}
 		log.Error(err.Error())
-		return level, banana.UpdateFailed
+		return level, banana.SererError
 	}
 	return level, nil
 }
@@ -62,8 +67,12 @@ func (u LevelRepo) UpdateLevelById(context context.Context, level modelevel.ResL
 		`
 	_, err := u.sqlDB.NamedExecContext(context, statement, level)
 	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1062{
 		log.Error(err.Error())
-		return level, banana.UpdateFailed
+		return level, banana.SameName
+		}
+		log.Error(err.Error())
+		return level, banana.SererError
 	}
 	return level, nil
 }
@@ -71,8 +80,12 @@ func (u LevelRepo) DeleteLevelById(context context.Context, LevelID int) (sql.Re
 	query := "DELETE FROM capbac WHERE ID = ?"
 	result, err := u.sqlDB.ExecContext(context, query, LevelID)
 	if err != nil {
+		if err.(*mysql.MySQLError).Number == 1451{
 		log.Error(err.Error())
-		return result, banana.UpdateFailed
+		return result, banana.ForenkeyErrol
+		}
+		log.Error(err.Error())
+		return result, banana.SererError
 	}
 	return result, nil
 }
