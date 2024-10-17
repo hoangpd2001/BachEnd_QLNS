@@ -35,5 +35,5 @@ func main() {
 	api := config.InitApp(e, sql.Db)
 	api.SetupRouter()
 
-	e.Logger.Fatal(e.Start(":1323"))
+	e.Logger.Fatal(e.Listen("0.0.0.0:" + 3000))
 }
