@@ -7,6 +7,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"os"
 )
 
 func main() {
@@ -35,5 +36,5 @@ func main() {
 	api := config.InitApp(e, sql.Db)
 	api.SetupRouter()
 
-	e.Logger.Fatal(e.Listen("0.0.0.0:" + 3000))
+	e.Logger.Fatal(e.Start("0.0.0.0:" + os.Getenv("PORT")))
 }
