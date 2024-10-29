@@ -8,10 +8,11 @@ type ReqUser struct {
 	Ho             string        `validate:"required"`
 	Email          string        `validate:"required"`
 	NgaySinh       string        `validate:"required"`
-	IDLoaiNhanVien int `validate:"required"`
-	IDCapBac       int `validate:"required"`
+	IDLoaiNhanVien int 			 `validate:"required"`
+	IDCapBac       int 			 `validate:"required"`
 	GioiTinh       string        `validate:""`
 	SDT            string        `validate:""`
 	DiaChi         string        `validate:""`
 	CCCD           string        `validate:""`
+	Pass			string      `validate:"required"`
 }

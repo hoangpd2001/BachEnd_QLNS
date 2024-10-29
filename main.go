@@ -7,33 +7,30 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+//	"os"
 )
 
+	var E *echo.Echo
 func main() {
 
 	sql := db.NewSqlConfig()
 	sql.Connect()
 	defer sql.Close()
-
-	e := echo.New()
-	e.Use(middleware.AddTrailingSlash())
-	e.Use(middleware.Logger())
-	e.Use(echo.MiddlewareFunc(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			c.Response().Header().Set("Access-Control-Allow-Origin", "*") // Cho phép từ mọi miền
-			c.Response().Header().Set("Access-Control-Allow-Headers", "Content-Type")
-			c.Response().Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE,OPTIONS")
-
-			// Kiểm tra nếu là phương thức OPTIONS
-			if c.Request().Method == http.MethodOptions {
-				return c.NoContent(http.StatusNoContent)
-			}
-			return next(c)
-		}
+	E = echo.New() 
+	E.Use(middleware.AddTrailingSlash())
+	E.Use(middleware.Logger())
+	E.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},
+		AllowHeaders: []string{"Content-Type", "Authorization"},
 	}))
 
-	api := config.InitApp(e, sql.Db)
+	api := config.InitApp(E, sql.Db)
 	api.SetupRouter()
 
-	e.Logger.Fatal(e.Start(":1323"))
+	E.Logger.Fatal(E.Start(":1323"))
+	//e.Logger.Fatal(e.Start("0.0.0.0:" + os.Getenv("PORT")))
+}
+func GetEcho() *echo.Echo{
+	return E
 }

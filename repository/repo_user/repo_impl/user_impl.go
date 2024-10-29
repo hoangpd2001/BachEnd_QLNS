@@ -2,9 +2,13 @@ package repoimpl
 
 import (
 	"BackEnd/mod/banana"
+	reqUser "BackEnd/mod/model/model_user/req_user"
 	resUser "BackEnd/mod/model/model_user/res_user"
 	repouser "BackEnd/mod/repository/repo_user"
 	"context"
+	"database/sql"
+	"fmt"
+
 	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/gommon/log"
@@ -24,8 +28,8 @@ func (u UserRepoImpl) CreatUser(context context.Context, user resUser.ResUser) (
 	statement :=
 		`
 	INSERT INTO nhanvien( Ten, Dem, Ho, Email, GioiTinh,
-	 SDT, NgaySinh, DiaChi, CCCD, IDLoaiNhanVien, IDCapBac, NgayBatDau, NgayKetThuc) 
-	 VALUES (:Ten,:Dem,:Ho,:Email,:GioiTinh,:SDT,:NgaySinh,:DiaChi,:CCCD,:IDLoaiNhanVien,:IDCapBac,:NgayBatDau,:NgayKetThuc)
+	 SDT, NgaySinh, DiaChi, CCCD, IDLoaiNhanVien, IDCapBac, NgayBatDau, NgayKetThuc,MatKhau) 
+	 VALUES (:Ten,:Dem,:Ho,:Email,:GioiTinh,:SDT,:NgaySinh,:DiaChi,:CCCD,:IDLoaiNhanVien,:IDCapBac,:NgayBatDau,:NgayKetThuc,:MatKhau)
 	`
 	result, err := u.sqlDB.NamedExecContext(context, statement, user)
 	if err != nil {
@@ -37,7 +41,7 @@ func (u UserRepoImpl) CreatUser(context context.Context, user resUser.ResUser) (
 			}
 		}
 
-		return user, banana.SignUpFail
+		return user, banana.SererError
 	}
 	userID, err := result.LastInsertId()
 	if err != nil {
@@ -51,25 +55,25 @@ func (u UserRepoImpl) CreatUser(context context.Context, user resUser.ResUser) (
 // =====================================================================================================================
 func (u UserRepoImpl) SelectUserAll(context context.Context) ([]resUser.ResUser, error) {
 	var listUser []resUser.ResUser
-	// sql:=`SELECT 
-    // nv.ID, nv.Ten, nv.Ho,nv.Dem, nv.Email, nv.GioiTinh, nv.SDT, nv.NgaySinh, nv.DiaChi, nv.CCCD,nv.NgayBatDau,nv.NgayKetThuc,
-    // loainv.LoaiNhanVien,
-    // capbac.TenCapBac,
-    // chucdanh.IDChucDanh,
-    // phongban.TenPhongBan,
-    // chinhanh.ChiNhanh
-	// FROM 
-    // nhanvien nv
+	// sql:=`SELECT
+	// nv.ID, nv.Ten, nv.Ho,nv.Dem, nv.Email, nv.GioiTinh, nv.SDT, nv.NgaySinh, nv.DiaChi, nv.CCCD,nv.NgayBatDau,nv.NgayKetThuc,
+	// loainv.LoaiNhanVien,
+	// capbac.TenCapBac,
+	// chucdanh.IDChucDanh,
+	// phongban.TenPhongBan,
+	// chinhanh.ChiNhanh
+	// FROM
+	// nhanvien nv
 	// LEFT JOIN loainhanvien loainv ON nv.IDLoaiNhanVien = loainv.ID
 	// LEFT JOIN capbac capbac ON nv.IDCapBac = capbac.ID
-	// LEFT JOIN nhanvien_chucdanh chucdanh ON nv.ID = chucdanh.IDNhanVien 
-    // AND chucdanh.NgayKetThuc ="0000-00-00 00:00:00"
-    // AND chucdanh.NgayBatDau !="0000-00-00 00:00:00"
+	// LEFT JOIN nhanvien_chucdanh chucdanh ON nv.ID = chucdanh.IDNhanVien
+	// AND chucdanh.NgayKetThuc ="0000-00-00 00:00:00"
+	// AND chucdanh.NgayBatDau !="0000-00-00 00:00:00"
 	// LEFT JOIN phongban phongban ON chucdanh.IDPhongBan = phongban.ID
 	// LEFT JOIN chinhanh chinhanh ON phongban.IDChiNhanh = chinhanh.ID
 	// `
 	sql := `SELECT * FROM nhanvien`
-	err := u.sqlDB.SelectContext(context, &listUser,sql)
+	err := u.sqlDB.SelectContext(context, &listUser, sql)
 	if err != nil {
 		log.Error(err.Error())
 		return listUser, err
@@ -82,7 +86,7 @@ func (u UserRepoImpl) SelectUserAll(context context.Context) ([]resUser.ResUser,
 
 func (u UserRepoImpl) SelectUserById(context context.Context, UserId int) (resUser.ResUser, error) {
 	var user resUser.ResUser
-	sql:=`SELECT 
+	sql := `SELECT 
     nv.ID, nv.Ten, nv.Ho,nv.Dem, nv.Email, nv.GioiTinh, nv.SDT, nv.NgaySinh, nv.DiaChi, nv.CCCD,nv.NgayBatDau,nv.NgayKetThuc,
     loainv.LoaiNhanVien,
     capbac.TenCapBac,
@@ -94,7 +98,7 @@ func (u UserRepoImpl) SelectUserById(context context.Context, UserId int) (resUs
     nhanvien nv
 	LEFT JOIN loainhanvien loainv ON nv.IDLoaiNhanVien = loainv.ID
 	LEFT JOIN capbac capbac ON nv.IDCapBac = capbac.ID
-	LEFT JOIN nhanvien_nguoithan nguoiThan ON nv.ID = nguoiThan.IDNhanVien
+	LEFT JOIN nhanvien_nguoithan nguoiThan ON nv.ID = nguoiThan.IDNhanVien,
 	LEFT JOIN nhanvien_chucdanh chucdanh ON nv.ID = chucdanh.IDNhanVien 
     AND chucdanh.NgayKetThuc ="0000-00-00 00:00:00"
     AND chucdanh.NgayBatDau !="0000-00-00 00:00:00"
@@ -117,18 +121,77 @@ func (u UserRepoImpl) SelectUserById(context context.Context, UserId int) (resUs
 	return user, nil
 }
 
-// func (u *UserRepoImpl) CheckLogin(context context.Context, loginReq req.ReqSignIn) (model.User, error) {
-// 	var user = model.User{}
-// 	err := u.sqlDB.GetContext(context, &user, "SELECT * FROM users WHERE email=?", loginReq.Email)
-// 	if err != nil {
-// 		log.Error(err.Error())
-// 		if err == sql.ErrNoRows {
-// 			return user, banana.UserNotFound
-// 		}
-// 		return user, err
-// 	}
-// 	return user, nil
-// }
+// =====================================================================================================================
+func (u UserRepoImpl) SelectCountUser(context context.Context) ([]resUser.ResUserCount, error) {
+	var listUser []resUser.ResUserCount
+	sql := `
+		SELECT 
+  DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL seq MONTH), '%Y-%m') AS Thang,
+  COUNT(nv.ID) AS SoLuong
+FROM 
+  (SELECT 0 AS seq UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 
+   UNION SELECT 5) AS months
+LEFT JOIN nhanvien nv
+ON nv.NgayBatDau <= LAST_DAY(DATE_SUB(CURDATE(), INTERVAL seq MONTH))
+AND (nv.NgayKetThuc IS NULL OR nv.NgayKetThuc = '0000-00-00' OR nv.NgayKetThuc >= DATE_SUB(CURDATE(), INTERVAL seq MONTH))
+GROUP BY Thang
+ORDER BY Thang;
+
+	`
+	err := u.sqlDB.SelectContext(context, &listUser, sql)
+	if err != nil {
+		log.Error(err.Error())
+		return listUser, err
+	}
+	return listUser, nil
+}
+
+func (u *UserRepoImpl) CheckLogin(context context.Context, loginReq reqUser.ReqSignIn) ([]resUser.ResSingin, error) {
+	var ListUser = []resUser.ResSingin{}
+	sql := `SELECT 
+					n.ID,
+					n.Email,
+					n.MatKhau,
+					COALESCE(nc.IDChucDanh, 0) AS IDChucDanh
+				FROM 
+					nhanvien n
+				LEFT JOIN 
+					nhanvien_chucdanh nc 
+				ON 
+					n.ID = nc.IDNhanVien 
+					AND nc.NgayKetThuc = '0000-00-00 00:00:00'
+				WHERE 
+					n.Email = ?;`
+	err := u.sqlDB.SelectContext(context, &ListUser, sql, loginReq.Email)
+	if err != nil {
+		return ListUser, err
+	}
+	// if len(ListUser) == 0 || ListUser == nil{
+		
+	// err := u.sqlDB.SelectContext(context, &ListUser, sql, loginReq.Email)
+	// if err != nil {
+	// 	return ListUser, err
+	// }
+	// }
+	return ListUser, nil
+}
+
+func (u *UserRepoImpl) EditLogin(context context.Context, loginReq reqUser.ReqSignInEdit, mk string) (sql.Result, error) {
+	sql := `UPDATE 
+				nhanvien
+			SET MatKhau = ?
+			WHERE 
+				Email	 = ?
+				AND SDT  = ?
+			`
+	fmt.Println(mk)
+	result, err := u.sqlDB.ExecContext(context, sql, mk, loginReq.Email, loginReq.SDT)
+	if err != nil {
+		return result, err
+	}
+	return result, nil
+}
+
 // func (u UserRepoImpl) SelectUserById(context context.Context, userId int) (model.User, error) {
 // 	var user model.User
 

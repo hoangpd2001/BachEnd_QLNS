@@ -51,7 +51,7 @@ func (u SkillUserRepo) SelectSkillUserAll(context context.Context, UserId int) (
 }
 func (u SkillUserRepo) SelectSkillUser(context context.Context) ([]modelskill.ResUserSkill, error) {
 	var SliceSkill []modelskill.ResUserSkill
-	query := "SELECT nhanvien_kynang.*,nhanvien.Ten, nhanvien.Dem, nhanvien.Ho, TenKyNang FROM nhanvien_kynang, nhanvien,KyNang WHERE nhanvien.ID = nhanvien_kynang.IDNhanVien and kynang.ID = nhanvien_kynang.IDKyNang "
+	query := "SELECT nhanvien_kynang.*,nhanvien.Ten, nhanvien.Dem, nhanvien.Ho, TenKyNang FROM nhanvien_kynang, nhanvien,kynang WHERE nhanvien.ID = nhanvien_kynang.IDNhanVien and kynang.ID = nhanvien_kynang.IDKyNang "
 	err := u.sqlDB.SelectContext(context, &SliceSkill, query)
 	if err != nil {
 		log.Error(err.Error())

@@ -6,10 +6,12 @@ import (
 	grupcontroller "BackEnd/mod/controller/grup_controller"
 	insurancecontroller "BackEnd/mod/controller/insurance_controller"
 	levelcontroller "BackEnd/mod/controller/level_controller"
+	rolecontroller "BackEnd/mod/controller/role_controller"
 	skillcontroller "BackEnd/mod/controller/skill_controller"
 	titlecontroller "BackEnd/mod/controller/title_controller"
 	typecontroller "BackEnd/mod/controller/type_controller"
 	user_controller "BackEnd/mod/controller/user_controller"
+	myMiddleware "BackEnd/mod/middleware"
 
 	"github.com/labstack/echo/v4"
 )
@@ -31,100 +33,116 @@ type API struct {
 	GrupUserController      grupcontroller.GrupUserController
 	InsuranceController     insurancecontroller.InsuranceController
 	InsuranceUserController insurancecontroller.InsuranceUserController
+	RoleController          rolecontroller.RoleController
+	RoleUserController      rolecontroller.RoleUserController
 }
 
 func (api *API) SetupRouter() {
-	// api.Echo.POST("/user/sign-in", api.UseController.HandleSignIn)
-	api.Echo.POST("/user/creatUser", api.UseController.CreatUser)
-	api.Echo.GET("/user/selectAll", api.UseController.SelectUserAll)
-	api.Echo.GET("/user/selectOne/", api.UseController.SelectUserById)
+	api.Echo.POST("/user/sign-in", api.UseController.HandleSignIn)
+	api.Echo.POST("/user/editPass", api.UseController.HanEditLogin)
+
 	//	api.Echo.PUT("/profile/update", api.UseController.UpdateUserById)
-	// user := api.Echo.Group("/user", myMiddleware.JWTMiddlware())
+	user := api.Echo.Group("", myMiddleware.JWTMiddlware())
+
+
 	// user.GET("/profile", api.UseController.Profile)
 	// user.PUT("/profile/update", api.UseController.UpdateProfile)
 
-	api.Echo.POST("/user/education/creat", api.EducationController.CreatEducation)
-	api.Echo.GET("/user/education/SelectAll/", api.EducationController.SelectEducationByUser)
-	api.Echo.GET("/user/education/SelectOne/", api.EducationController.SelectEducationById)
-	api.Echo.PUT("/user/education/Update/", api.EducationController.UpdateEducationById)
-	api.Echo.DELETE("/user/education/Delete/", api.EducationController.DeleteEducationById)
+	user.POST("/user/creatUser", myMiddleware.PermissionMiddleware([]int{2},"Them")(api.UseController.CreatUser))
+	user.GET("/user/selectAll", myMiddleware.PermissionMiddleware([]int{2,4,3},"Xem")(api.UseController.SelectUserAll))
+	user.GET("/user/selectOne/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.UseController.SelectUserById))
+	user.GET("/user/selectCount/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.UseController.SelectCountUser))
 
-	api.Echo.POST("/user/relative/creat/", api.RelativeController.CreatRelative)
-	api.Echo.GET("/user/relative/select/", api.RelativeController.SelectRelativeByUser)
-	api.Echo.PUT("/user/relative/update/", api.RelativeController.UpdateRelativeByUser)
+	user.POST("/user/education/creat", myMiddleware.PermissionMiddleware([]int{2},"Them")(api.EducationController.CreatEducation))
+	user.GET("/user/education/SelectAll/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.EducationController.SelectEducationByUser))
+	user.GET("/user/education/SelectOne/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.EducationController.SelectEducationById))
+	user.PUT("/user/education/Update/", myMiddleware.PermissionMiddleware([]int{2},"Sua")(api.EducationController.UpdateEducationById))
+	user.DELETE("/user/education/Delete/", myMiddleware.PermissionMiddleware([]int{2},"Xoa")(api.EducationController.DeleteEducationById))
 
-	api.Echo.POST("/user/type/creat", api.TypeController.CreatType)
-	api.Echo.GET("/user/type/selectAll", api.TypeController.SelectTypeAll)
-	api.Echo.GET("/user/type/selectOne/", api.TypeController.SelelectTypeByUser)
-	api.Echo.PUT("/user/type/update/", api.TypeController.UpdateTypeById)
-	api.Echo.DELETE("/user/type/delete/", api.TypeController.DeleteTypeById)
+	user.POST("/user/type/creat", myMiddleware.PermissionMiddleware([]int{2},"Them")(api.TypeController.CreatType))              
+	user.GET("/user/type/selectAll", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.TypeController.SelectTypeAll))       
+	user.GET("/user/type/selectOne/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.TypeController.SelelectTypeByUser)) 
+	user.PUT("/user/type/update/", myMiddleware.PermissionMiddleware([]int{2},"Sua")(api.TypeController.UpdateTypeById))        
+	user.DELETE("/user/type/delete/", myMiddleware.PermissionMiddleware([]int{2},"Xoa")(api.TypeController.DeleteTypeById)) 
 
-	api.Echo.POST("/user/skill/creat", api.SkillController.CreatSkill)
-	api.Echo.GET("/user/skill/selectAll", api.SkillController.SelectSkillAll)
-	api.Echo.GET("/user/skill/selectOne/", api.SkillController.SelelectSkillById)
-	api.Echo.PUT("/user/skill/update/", api.SkillController.UpdateSkillById)
-	api.Echo.DELETE("/user/skill/delete/", api.SkillController.DeleteSkillById)
 
-	api.Echo.POST("/user/skilluser/creat/", api.SkillUserController.CreatSkillUser)
-	api.Echo.GET("/user/skilluser/selectAll/", api.SkillUserController.SelectSkillUserAll)
-	api.Echo.GET("/user/skilluser/select/", api.SkillUserController.SelectSkillUser)
-	api.Echo.GET("/user/skilluser/selectOne/", api.SkillUserController.SelelectSkillUser)
-	api.Echo.PUT("/user/skilluser/update/", api.SkillUserController.UpdateSkillUser)
-	api.Echo.DELETE("/user/skilluser/delete/", api.SkillUserController.DeleteSkillUser)
+	user.POST("/user/relative/creat/", myMiddleware.PermissionMiddleware([]int{2},"Them")(api.RelativeController.CreatRelative))
+	user.GET("/user/relative/select/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.RelativeController.SelectRelativeByUser))
+	user.PUT("/user/relative/update/", myMiddleware.PermissionMiddleware([]int{2},"Sua")(api.RelativeController.UpdateRelativeByUser))
 
-	api.Echo.POST("/branch/creat", api.BranchController.CreatBranch)
-	api.Echo.GET("/branch/selectAll", api.BranchController.SelectBranchAll)
-	api.Echo.GET("/branch/selectOne/", api.BranchController.SelelectBranchById)
-	api.Echo.PUT("/branch/update/", api.BranchController.UpdateBranchById)
-	api.Echo.DELETE("/branch/delete/", api.BranchController.DeleteBranchById)
+	user.POST("/user/skill/creat", myMiddleware.PermissionMiddleware([]int{4},"Them")(api.SkillController.CreatSkill))
+	user.GET("/user/skill/selectAll", myMiddleware.PermissionMiddleware([]int{4},"Xem")(api.SkillController.SelectSkillAll))
+	user.GET("/user/skill/selectOne/", myMiddleware.PermissionMiddleware([]int{4},"Xem")(api.SkillController.SelelectSkillById))
+	user.PUT("/user/skill/update/", myMiddleware.PermissionMiddleware([]int{4},"Sua")(api.SkillController.UpdateSkillById))
+	user.DELETE("/user/skill/delete/", myMiddleware.PermissionMiddleware([]int{4},"Xoa")(api.SkillController.DeleteSkillById))
 
-	api.Echo.POST("/title/creat", api.TitleController.CreatTitle)
-	api.Echo.GET("/title/selectAll", api.TitleController.SelectTitleAll)
-	api.Echo.GET("/title/selectOne/", api.TitleController.SelelectTitleById)
-	api.Echo.PUT("/title/update/", api.TitleController.UpdateTitleById)
-	api.Echo.DELETE("/title/delete/", api.TitleController.DeleteTitleById)
+	user.POST("/user/skilluser/creat/", myMiddleware.PermissionMiddleware([]int{4},"Them")(api.SkillUserController.CreatSkillUser))
+	user.GET("/user/skilluser/selectAll/", myMiddleware.PermissionMiddleware([]int{4},"Xem")(api.SkillUserController.SelectSkillUserAll))
+	user.GET("/user/skilluser/select/", myMiddleware.PermissionMiddleware([]int{4},"Xem")(api.SkillUserController.SelectSkillUser))
+	user.GET("/user/skilluser/selectOne/", myMiddleware.PermissionMiddleware([]int{4},"Xem")(api.SkillUserController.SelelectSkillUser))
+	user.PUT("/user/skilluser/update/", myMiddleware.PermissionMiddleware([]int{4},"Sua")(api.SkillUserController.UpdateSkillUser))
+	user.DELETE("/user/skilluser/delete/", myMiddleware.PermissionMiddleware([]int{4},"Xoa")(api.SkillUserController.DeleteSkillUser))
 
-	api.Echo.POST("/department/creat", api.DepartmentController.CreatDepartment)
-	api.Echo.GET("/department/selectAll", api.DepartmentController.SelectDepartmentAll)
-	api.Echo.GET("/department/selectOne/", api.DepartmentController.SelelectDepartmentById)
-	api.Echo.GET("/department/selectByBranch/", api.DepartmentController.SelelectDepartmentByBranch)
-	api.Echo.PUT("/department/update/", api.DepartmentController.UpdateDepartmentById)
-	api.Echo.DELETE("/department/delete/", api.DepartmentController.DeleteDepartment)
+	user.POST("/userTitle/creat", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.UserTitleController.CreatUserTitle))
+	user.GET("/userTitle/selectAll/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.UserTitleController.SelectUserTitleAll))
+	user.GET("/userTitle/selectOne/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.UserTitleController.SelelectUserTitle))
+	user.PUT("/userTitle/update/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.UserTitleController.UpdateUserTitle))
+	user.DELETE("/userTitle/delete/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.UserTitleController.DeleteUserTitle))
 
-	api.Echo.POST("/userTitle/creat", api.UserTitleController.CreatUserTitle)
-	api.Echo.GET("/userTitle/selectAll/", api.UserTitleController.SelectUserTitleAll)
-	api.Echo.GET("/userTitle/selectOne/", api.UserTitleController.SelelectUserTitle)
-	api.Echo.PUT("/userTitle/update/", api.UserTitleController.UpdateUserTitle)
-	api.Echo.DELETE("/userTitle/delete/", api.UserTitleController.DeleteUserTitle)
+	user.POST("/userGrup/creat", myMiddleware.PermissionMiddleware([]int{3},"Xem")(api.GrupUserController.CreatGrupUser))
+	user.GET("/userGrup/selectAll/", myMiddleware.PermissionMiddleware([]int{3},"Xem")(api.GrupUserController.SelectGrupUserAll))
+	user.GET("/userGrup/select/", myMiddleware.PermissionMiddleware([]int{3},"Xem")(api.GrupUserController.SelelectGrupUser))
 
-	api.Echo.POST("/level/creat", api.LevelController.CreatLevel)
-	api.Echo.GET("/level/selectAll", api.LevelController.SelectLevelAll)
-	api.Echo.GET("/level/selectOne/", api.LevelController.SelelectLevelByUser)
-	api.Echo.PUT("/level/update/", api.LevelController.UpdateLevelById)
-	api.Echo.DELETE("/level/delete/", api.LevelController.DeleteLevelById)
+	user.POST("/branch/creat", myMiddleware.PermissionMiddleware([]int{3},"Them")(api.BranchController.CreatBranch))
+	user.GET("/branch/selectAll", myMiddleware.PermissionMiddleware([]int{3,2},"Xem")(api.BranchController.SelectBranchAll))
+	user.GET("/branch/selectOne/", myMiddleware.PermissionMiddleware([]int{3},"Xem")(api.BranchController.SelelectBranchById))
+	user.PUT("/branch/update/", myMiddleware.PermissionMiddleware([]int{3},"Sua")(api.BranchController.UpdateBranchById))
+	user.DELETE("/branch/delete/", myMiddleware.PermissionMiddleware([]int{3},"Xoa")(api.BranchController.DeleteBranchById))
 
-	api.Echo.POST("/grup/creat", api.GrupController.CreatGrup)
-	api.Echo.GET("/grup/selectAll", api.GrupController.SelectGrupAll)
-	api.Echo.PUT("/grup/update/", api.GrupController.UpdateGrupById)
-	api.Echo.DELETE("/grup/delete/", api.GrupController.DeleteGrupById)
+	user.POST("/title/creat", myMiddleware.PermissionMiddleware([]int{2},"Them")(api.TitleController.CreatTitle))
+	user.GET("/title/selectAll", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.TitleController.SelectTitleAll))
+	user.GET("/title/selectOne/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.TitleController.SelelectTitleById))
+	user.PUT("/title/update/", myMiddleware.PermissionMiddleware([]int{2},"Sua")(api.TitleController.UpdateTitleById))
+	user.DELETE("/title/delete/", myMiddleware.PermissionMiddleware([]int{2},"Xoa")(api.TitleController.DeleteTitleById))
 
-	api.Echo.POST("/userGrup/creat", api.GrupUserController.CreatGrupUser)
-	api.Echo.GET("/userGrup/selectAll/", api.GrupUserController.SelectGrupUserAll)
-	api.Echo.GET("/userGrup/select/", api.GrupUserController.SelelectGrupUser)
-	//	api.Echo.PUT("/userGrup/update/", api.GrupUserController.)
-	api.Echo.DELETE("/userGrup/delete/", api.GrupUserController.DeleteGrupUser)
+	user.POST("/department/creat", myMiddleware.PermissionMiddleware([]int{3},"Them")(api.DepartmentController.CreatDepartment))
+	user.GET("/department/selectAll", myMiddleware.PermissionMiddleware([]int{3,2},"Xem")(api.DepartmentController.SelectDepartmentAll))
+	user.GET("/department/selectOne/", myMiddleware.PermissionMiddleware([]int{3,2},"Xem")(api.DepartmentController.SelelectDepartmentById))
+	user.GET("/department/selectByBranch/", myMiddleware.PermissionMiddleware([]int{3,2},"Xem")(api.DepartmentController.SelelectDepartmentByBranch))
+	user.PUT("/department/update/", myMiddleware.PermissionMiddleware([]int{3},"Sua")(api.DepartmentController.UpdateDepartmentById))
+	user.DELETE("/department/delete/", myMiddleware.PermissionMiddleware([]int{3},"Xoa")(api.DepartmentController.DeleteDepartment))
 
-	api.Echo.POST("/user/insurance/creat", api.InsuranceController.CreatInsurance)
-	api.Echo.GET("/user/insurance/selectAll", api.InsuranceController.SelectInsuranceAll)
-	api.Echo.GET("/user/insurance/selectOne/", api.InsuranceController.SelelectInsuranceById)
-	api.Echo.PUT("/user/insurance/update/", api.InsuranceController.UpdateInsuranceById)
-	api.Echo.DELETE("/user/insurance/delete/", api.InsuranceController.DeleteInsuranceById)
+	user.POST("/level/creat", myMiddleware.PermissionMiddleware([]int{3},"Them")(api.LevelController.CreatLevel))
+	user.GET("/level/selectAll", myMiddleware.PermissionMiddleware([]int{3,2},"Xem")(api.LevelController.SelectLevelAll))
+	user.GET("/level/selectOne/", myMiddleware.PermissionMiddleware([]int{3,2},"Xem")(api.LevelController.SelelectLevelByUser))
+	user.PUT("/level/update/", myMiddleware.PermissionMiddleware([]int{3},"Sua")(api.LevelController.UpdateLevelById))
+	user.DELETE("/level/delete/", myMiddleware.PermissionMiddleware([]int{3},"Xoa")(api.LevelController.DeleteLevelById))
 
-	api.Echo.POST("/user/insuranceUser/creat/", api.InsuranceUserController.CreatInsuranceUser)
-	api.Echo.GET("/user/insuranceUser/selectAll/", api.InsuranceUserController.SelectInsuranceUserAll)
-	api.Echo.GET("/user/insuranceUser/select/", api.InsuranceUserController.SelectInsuranceUser)
-	api.Echo.GET("/user/insuranceUser/selectOne/", api.InsuranceUserController.SelelectInsuranceUserOne)
-	api.Echo.PUT("/user/insuranceUser/update/", api.InsuranceUserController.UpdateInsuranceUser)
-	api.Echo.DELETE("/user/insuranceUser/delete/", api.InsuranceUserController.DeleteInsuranceUser)
+	user.POST("/grup/creat", myMiddleware.PermissionMiddleware([]int{3},"Them")(api.GrupController.CreatGrup))
+	user.GET("/grup/selectAll", myMiddleware.PermissionMiddleware([]int{3},"Xem")(api.GrupController.SelectGrupAll))
+	user.PUT("/grup/update/", myMiddleware.PermissionMiddleware([]int{3},"Xem")(api.GrupController.UpdateGrupById))
+	user.DELETE("/grup/delete/", myMiddleware.PermissionMiddleware([]int{3},"Xoa")(api.GrupController.DeleteGrupById))
+	user.DELETE("/userGrup/delete/", myMiddleware.PermissionMiddleware([]int{3},"Xoa")(api.GrupUserController.DeleteGrupUser))
+
+	user.POST("/user/insurance/creat", myMiddleware.PermissionMiddleware([]int{2},"Them")(api.InsuranceController.CreatInsurance))
+	user.GET("/user/insurance/selectAll", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.InsuranceController.SelectInsuranceAll))
+	user.GET("/user/insurance/selectOne/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.InsuranceController.SelelectInsuranceById))
+	user.PUT("/user/insurance/update/", myMiddleware.PermissionMiddleware([]int{2},"Sua")(api.InsuranceController.UpdateInsuranceById))
+	user.DELETE("/user/insurance/delete/", myMiddleware.PermissionMiddleware([]int{2},"Xoa")(api.InsuranceController.DeleteInsuranceById))
+
+	user.POST("/user/insuranceUser/creat/", myMiddleware.PermissionMiddleware([]int{2},"Them")(api.InsuranceUserController.CreatInsuranceUser))
+	user.GET("/user/insuranceUser/selectAll/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.InsuranceUserController.SelectInsuranceUserAll))
+	user.GET("/user/insuranceUser/select/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.InsuranceUserController.SelectInsuranceUser))
+	user.GET("/user/insuranceUser/selectOne/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.InsuranceUserController.SelelectInsuranceUserOne))
+	user.PUT("/user/insuranceUser/update/", myMiddleware.PermissionMiddleware([]int{2},"Sua")(api.InsuranceUserController.UpdateInsuranceUser))
+	user.DELETE("/user/insuranceUser/delete/", myMiddleware.PermissionMiddleware([]int{2},"Xoa")(api.InsuranceUserController.DeleteInsuranceUser))
+
+	user.GET("/role/selectAll", myMiddleware.PermissionMiddleware([]int{1},"Xem")(api.RoleController.SelectRoleAll))
+
+	user.POST("/userrole/creat/", myMiddleware.PermissionMiddleware([]int{1},"Them")(api.RoleUserController.CreatRoleUser))
+	user.GET("/userrole/selectAll", myMiddleware.PermissionMiddleware([]int{1},"Xem")(api.RoleUserController.SelectRoleUserAll))
+	// user.GET("/userrole/selectAll", myMiddleware.PermissionMiddleware([]int{1},"Xem")(api.RoleUserController.SelelectRoleUser())
+	user.PUT("/userrole/update/", myMiddleware.PermissionMiddleware([]int{1},"Sua")(api.RoleUserController.UpdateRoleUser))
+	user.DELETE("/userrole/delete/", myMiddleware.PermissionMiddleware([]int{1},"Xoa")(api.RoleUserController.DeleteRoleUser))
 
 }

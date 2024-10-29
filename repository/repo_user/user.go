@@ -1,6 +1,7 @@
 package repouser
 
 import (
+	reqUser "BackEnd/mod/model/model_user/req_user"
 	resUser "BackEnd/mod/model/model_user/res_user"
 	"context"
 	"database/sql"
@@ -8,9 +9,11 @@ import (
 
 type UserRepo interface {
 	CreatUser(context context.Context, user resUser.ResUser) (resUser.ResUser, error)
-	// CheckLogin(context context.Context, loginReq req_user.ReqSignIn) (resUser.User, error)
+	CheckLogin(context context.Context, loginReq reqUser.ReqSignIn) ([]resUser.ResSingin, error)
+	EditLogin(context context.Context, loginReq reqUser.ReqSignInEdit,mk string) (sql.Result, error)
 	SelectUserAll(context context.Context) ([]resUser.ResUser, error)
 	SelectUserById(context context.Context, IdUser int) (resUser.ResUser, error)
+	SelectCountUser(context context.Context) ([]resUser.ResUserCount, error)
 	// UpdateUserById(context context.Context, user model.User ) (model.User, error)
 }
 type EducationRepo interface {

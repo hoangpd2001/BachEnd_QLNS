@@ -3,6 +3,8 @@ package security
 import (
 	"BackEnd/mod/model"
 	resUser "BackEnd/mod/model/model_user/res_user"
+	"log"
+
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -10,11 +12,13 @@ import (
 
 const SECRET_KEY = "hoang"
 
-func GenToken(user resUser.ResUser) (string, error) {
+func GenToken(user resUser.ResSingin, roles []int) (string, error) {
+
 	claims := &model.JwtCustomClaims{
 		UserId: user.ID,
+		Role:   roles,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
+			ExpiresAt: time.Now().Add(time.Hour * 100).Unix(),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -22,19 +26,24 @@ func GenToken(user resUser.ResUser) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return result, nil
 }
-func GenTokenUserFull(user resUser.ResUserFull) (string, error) {
-	claims := &model.JwtCustomClaims{
-		UserId: user.ID,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
-		},
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	result, err := token.SignedString([]byte(SECRET_KEY))
+func ExtractClaims(tokenStr string) (jwt.MapClaims, bool) {
+	hmacSecretString := SECRET_KEY
+	hmacSecret := []byte(hmacSecretString)
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		return hmacSecret, nil
+	})
+
 	if err != nil {
-		return "", err
+		return nil, false
 	}
-	return result, nil
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, true
+	} else {
+		log.Printf("Invalid JWT Token")
+		return nil, false
+	}
 }

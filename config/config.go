@@ -6,20 +6,21 @@ import (
 	grupcontroller "BackEnd/mod/controller/grup_controller"
 	insurancecontroller "BackEnd/mod/controller/insurance_controller"
 	levelcontroller "BackEnd/mod/controller/level_controller"
+	rolecontroller "BackEnd/mod/controller/role_controller"
 	skillcontrollerr "BackEnd/mod/controller/skill_controller"
 	titlecontroller "BackEnd/mod/controller/title_controller"
 	typecontroller "BackEnd/mod/controller/type_controller"
 	usercontroller "BackEnd/mod/controller/user_controller"
-	repoinsurance "BackEnd/mod/repository/repo_insurance"
+	reporole "BackEnd/mod/repository/repo_Role"
 	repobranch "BackEnd/mod/repository/repo_branch"
 	repodepartment "BackEnd/mod/repository/repo_department"
 	repogrup "BackEnd/mod/repository/repo_grup"
+	repoinsurance "BackEnd/mod/repository/repo_insurance"
 	repolevel "BackEnd/mod/repository/repo_level"
 	reposkill "BackEnd/mod/repository/repo_skill"
 	repotitle "BackEnd/mod/repository/repo_title"
 	repotype "BackEnd/mod/repository/repo_type"
 	repoimpl "BackEnd/mod/repository/repo_user/repo_impl"
-
 	"BackEnd/mod/router"
 
 	"github.com/jmoiron/sqlx"
@@ -42,7 +43,8 @@ func InitApp(e *echo.Echo, sqlDB *sqlx.DB) *router.API {
 	userGrupRepo := repogrup.NewGrupUserRepo(sqlDB)
 	insuranceRepo := repoinsurance.NewInsuranceRepo(sqlDB)
 	insuranceUserRepo := repoinsurance.NewInsuranceUserRepo(sqlDB)
-
+	roleRepo := reporole.NewRole((sqlDB))
+	userRoleRepo := reporole.NewRoleUserRepo(sqlDB)
 	userController := usercontroller.UseController{
 		UserRepo: userRepo,
 	}
@@ -88,24 +90,32 @@ func InitApp(e *echo.Echo, sqlDB *sqlx.DB) *router.API {
 	insurancecontroller := insurancecontroller.InsuranceController{
 		InsuranceRepo: *insuranceRepo,
 	}
+	userRoleController := rolecontroller.RoleUserController{
+		RoleUserRepo: *userRoleRepo,
+	}
+	rolecontroller := rolecontroller.RoleController{
+		RoleRepo: *roleRepo,
+	}
 
 	api := &router.API{
-		Echo:                 e,
-		UseController:        userController,
-		EducationController:  educationController,
-		RelativeController:   relativeController,
-		TypeController:       typecontroller,
-		SkillController:      skillcontroller,
-		SkillUserController:  skillUserController,
-		BranchController:     branchcontroller,
-		TitleController:      titlecontroller,
-		DepartmentController: departmentcontroller,
-		UserTitleController:  UserTitleController,
-		LevelController:      levelcontroller,
-		GrupController:       grupcontroller,
-		GrupUserController:   userGrupcontroller,
-		InsuranceController:  insurancecontroller,
+		Echo:                    e,
+		UseController:           userController,
+		EducationController:     educationController,
+		RelativeController:      relativeController,
+		TypeController:          typecontroller,
+		SkillController:         skillcontroller,
+		SkillUserController:     skillUserController,
+		BranchController:        branchcontroller,
+		TitleController:         titlecontroller,
+		DepartmentController:    departmentcontroller,
+		UserTitleController:     UserTitleController,
+		LevelController:         levelcontroller,
+		GrupController:          grupcontroller,
+		GrupUserController:      userGrupcontroller,
+		InsuranceController:     insurancecontroller,
 		InsuranceUserController: insuranceUserController,
+		RoleController:          rolecontroller,
+		RoleUserController:      userRoleController,
 	}
 
 	return api

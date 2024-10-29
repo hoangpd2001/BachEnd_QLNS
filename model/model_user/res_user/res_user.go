@@ -40,4 +40,6 @@ type ResUser struct {
 	SDTNguoiThan   string `db:"SDTNguoiThan"     json:"SDTNguoiThan,omitempty"`
 	DiaChiNguoiThan string `db:"DiaChiNguoiThan"  json:"DiaChiNguoiThan,omitempty"`
 	QuanHe         string `db:"QuanHe"           json:"QuanHe,omitempty"`
+	MatKhau         string `db:"MatKhau"           json:"MatKhau,omitempty"`
+	Token string `                    json:"Token,omitempty"`
 }

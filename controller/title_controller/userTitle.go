@@ -25,13 +25,13 @@ func (u *UserTitleController) CreatUserTitle(c echo.Context) error {
 
 	req := &modetitle.ReqUserTitle{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	  if err != nil {
-        return c.JSON(http.StatusBadRequest, model.Response{
-            StatusCode: http.StatusBadRequest,
-            Message:    err.Error(),
-            Data:       nil,
-        })
-    }
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, model.Response{
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
+		})
+	}
 	req, ok := validatedReq.(*modetitle.ReqUserTitle)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
@@ -45,12 +45,11 @@ func (u *UserTitleController) CreatUserTitle(c echo.Context) error {
 		fmt.Println("Error parsing NgayBatDau:", err)
 	}
 
+	err = u.CustomDate2.UnmarshalJSON([]byte(`"` + req.NgayKetThuc + `"`))
+	if err != nil {
+		fmt.Println("Error parsing NgayKetThuc:", err)
+	}
 
-		err = u.CustomDate2.UnmarshalJSON([]byte(`"` + req.NgayKetThuc + `"`))
-		if err != nil {
-			fmt.Println("Error parsing NgayKetThuc:", err)
-		}
-	
 	res := modetitle.ResUserTitle{
 		IDNhanVien:  req.IDNhanVien,
 		IDChucDanh:  req.IDChucDanh,
@@ -128,7 +127,7 @@ func (u *UserTitleController) SelelectUserTitle(c echo.Context) error {
 			Data:       nil,
 		})
 	}
-	
+
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
 		Message:    "Thành Công",
@@ -142,13 +141,13 @@ func (u *UserTitleController) UpdateUserTitle(c echo.Context) error {
 
 	req := &modetitle.ReqUserTitle{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
-	  if err != nil {
-        return c.JSON(http.StatusBadRequest, model.Response{
-            StatusCode: http.StatusBadRequest,
-            Message:    err.Error(),
-            Data:       nil,
-        })
-    }
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, model.Response{
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+			Data:       nil,
+		})
+	}
 	req, ok := validatedReq.(*modetitle.ReqUserTitle)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, model.Response{
@@ -157,13 +156,13 @@ func (u *UserTitleController) UpdateUserTitle(c echo.Context) error {
 			Data:       nil,
 		})
 	}
-	err = u.CustomDate.UnmarshalJSON([]byte(`"` + req.NgayBatDau + `"`)) 
+	err = u.CustomDate.UnmarshalJSON([]byte(`"` + req.NgayBatDau + `"`))
 	if err != nil {
 		fmt.Println("Error parsing NgayBatDau:", err)
 	}
 
 	if req.NgayKetThuc != "" {
-		err = u.CustomDate2.UnmarshalJSON([]byte(`"` + req.NgayKetThuc + `"`)) 
+		err = u.CustomDate2.UnmarshalJSON([]byte(`"` + req.NgayKetThuc + `"`))
 		if err != nil {
 			fmt.Println("Error parsing NgayKetThuc:", err)
 		}

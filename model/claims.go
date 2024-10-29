@@ -4,6 +4,6 @@ import "github.com/golang-jwt/jwt"
 
 type JwtCustomClaims struct {
 	UserId int
-	Role string
+	Role []int
 	jwt.StandardClaims
 }

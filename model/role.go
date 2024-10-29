@@ -1,13 +1,17 @@
 package model
 
 
-type Role int
+type Permission string
 
 const (
-	MEMBER Role = iota
-	ADMIN
+    View Permission = "VIEW Nhan Su"
+    Edit Permission = "EDIT"
+    Delete Permission = "DELETE"
+    // Thêm các quyền khác tùy theo yêu cầu
 )
 
-func (r Role) String()  string{
-	return []string{"MEMBER","ADMIN",}[r]
+var RolePermissions = map[int][]Permission{
+    5:  {View, Edit, Delete},
+    3: {View},
+
 }
