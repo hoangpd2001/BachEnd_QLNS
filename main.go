@@ -4,19 +4,20 @@ import (
 	"BackEnd/mod/config"
 	"BackEnd/mod/db"
 	"net/http"
+	"os"
+
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"os"
+
 )
 
-	
 func main() {
 
 	sql := db.NewSqlConfig()
 	sql.Connect()
 	defer sql.Close()
-	e := echo.New() 
+	e := echo.New()
 	e.Use(middleware.AddTrailingSlash())
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -28,6 +29,6 @@ func main() {
 	api := config.InitApp(e, sql.Db)
 	api.SetupRouter()
 
-	//E.Logger.Fatal(E.Start(":1323"))
+	//e.Logger.Fatal(e.Start(":1323"))
 	e.Logger.Fatal(e.Start("0.0.0.0:" + os.Getenv("PORT")))
 }
