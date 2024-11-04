@@ -18,7 +18,7 @@ func GenToken(user resUser.ResSingin, roles []int) (string, error) {
 		UserId: user.ID,
 		Role:   roles,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 100).Unix(),
+			ExpiresAt: time.Now().Add(time.Hour * 5).Unix(),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -30,8 +30,8 @@ func GenToken(user resUser.ResSingin, roles []int) (string, error) {
 	return result, nil
 }
 func ExtractClaims(tokenStr string) (jwt.MapClaims, bool) {
-	hmacSecretString := SECRET_KEY
-	hmacSecret := []byte(hmacSecretString)
+	hmacSecret := []byte(SECRET_KEY)
+
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		return hmacSecret, nil
 	})
@@ -41,6 +41,13 @@ func ExtractClaims(tokenStr string) (jwt.MapClaims, bool) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		if exp, ok := claims["exp"].(float64); ok {
+			expirationTime := time.Unix(int64(exp), 0)
+			if time.Now().After(expirationTime) {
+				log.Printf("Token đã hết hạn")
+				return nil, false
+			}
+		}
 		return claims, true
 	} else {
 		log.Printf("Invalid JWT Token")
