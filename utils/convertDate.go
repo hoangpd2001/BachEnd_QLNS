@@ -27,6 +27,6 @@ func (cd *CustomDate) UnmarshalJSON(data []byte) error {
 }
 
 func (cd CustomDate) MarshalJSON() ([]byte, error) {
-	formatted := fmt.Sprintf("\"%s\"", cd.Time.Format("2006-01-02"))
-	return []byte(formatted), nil
+	formatted := fmt.Sprintf("\"%s\"",  cd.Time.Format("2006-01-02"))
+	return []byte(formatted), nil 
 }
