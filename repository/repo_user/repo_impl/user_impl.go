@@ -55,23 +55,6 @@ func (u UserRepoImpl) CreatUser(context context.Context, user resUser.ResUser) (
 // =====================================================================================================================
 func (u UserRepoImpl) SelectUserAll(context context.Context) ([]resUser.ResUser, error) {
 	var listUser []resUser.ResUser
-	// sql:=`SELECT
-	// nv.ID, nv.Ten, nv.Ho,nv.Dem, nv.Email, nv.GioiTinh, nv.SDT, nv.NgaySinh, nv.DiaChi, nv.CCCD,nv.NgayBatDau,nv.NgayKetThuc,
-	// loainv.LoaiNhanVien,
-	// capbac.TenCapBac,
-	// chucdanh.IDChucDanh,
-	// phongban.TenPhongBan,
-	// chinhanh.ChiNhanh
-	// FROM
-	// nhanvien nv
-	// LEFT JOIN loainhanvien loainv ON nv.IDLoaiNhanVien = loainv.ID
-	// LEFT JOIN capbac capbac ON nv.IDCapBac = capbac.ID
-	// LEFT JOIN nhanvien_chucdanh chucdanh ON nv.ID = chucdanh.IDNhanVien
-	// AND chucdanh.NgayKetThuc ="0000-00-00 00:00:00"
-	// AND chucdanh.NgayBatDau !="0000-00-00 00:00:00"
-	// LEFT JOIN phongban phongban ON chucdanh.IDPhongBan = phongban.ID
-	// LEFT JOIN chinhanh chinhanh ON phongban.IDChiNhanh = chinhanh.ID
-	// `
 	sql := `SELECT * FROM nhanvien`
 	err := u.sqlDB.SelectContext(context, &listUser, sql)
 	if err != nil {
@@ -166,13 +149,7 @@ func (u *UserRepoImpl) CheckLogin(context context.Context, loginReq reqUser.ReqS
 	if err != nil {
 		return ListUser, err
 	}
-	// if len(ListUser) == 0 || ListUser == nil{
-		
-	// err := u.sqlDB.SelectContext(context, &ListUser, sql, loginReq.Email)
-	// if err != nil {
-	// 	return ListUser, err
-	// }
-	// }
+
 	return ListUser, nil
 }
 
@@ -192,39 +169,24 @@ func (u *UserRepoImpl) EditLogin(context context.Context, loginReq reqUser.ReqSi
 	return result, nil
 }
 
-// func (u UserRepoImpl) SelectUserById(context context.Context, userId int) (model.User, error) {
-// 	var user model.User
+func (u UserRepoImpl) UpdateUserById(context context.Context, user resUser.ResUser) (resUser.ResUser, error) {
+	statement := `
+		UPDATE nhanvien SET Ten=:Ten,Dem=:Dem,Ho=:Ho,
+		Email=:Email,GioiTinh=:GioiTinh,SDT=:SDT,
+		NgaySinh=:NgaySinh,DiaChi=:DiaChi,CCCD=:CCCD,
+		IDLoaiNhanVien=:IDLoaiNhanVien,IDCapBac=:IDCapBac,NgayBatDau=:NgayBatDau,
+		NgayKetThuc=:NgayKetThuc WHERE ID =:ID
+	`
+	_, err := u.sqlDB.NamedExecContext(context, statement, user)
+	if err != nil {
+		log.Error(err.Error())
+		if err, ok := err.(*mysql.MySQLError); ok {
+			if err.Number == 1062 {
+				return user, banana.UserConflict
+			}
+		}
 
-// 	err := u.sqlDB.GetContext(context, &user,
-// 		"SELECT * FROM users WHERE ID = ?", userId)
-
-// 	if err != nil {
-// 		if err == sql.ErrNoRows {
-// 			return user, banana.UserNotFound
-// 		}
-// 		log.Error(err.Error())
-// 		return user, err
-// 	}
-
-// 	return user, nil
-// }
-
-// func (u UserRepoImpl) UpdateUserById(context context.Context, user model.User) (model.User, error) {
-// 	statement := `
-// 		UPDATE users
-// 			SET email = :email, full_name = :full_name, role= :role
-// 			WHERE ID = :ID;
-// 	`
-// 	_, err := u.sqlDB.NamedExecContext(context, statement, user)
-// 	if err != nil {
-// 		log.Error(err.Error())
-// 		if err, ok := err.(*mysql.MySQLError); ok {
-// 			if err.Number == 1062 {
-// 				return user, banana.UserConflict
-// 			}
-// 		}
-
-// 		return user, banana.SignUpFail
-// 	}
-// 	return user, nil
-// }
+		return user, banana.SererError
+	}
+	return user, nil
+}

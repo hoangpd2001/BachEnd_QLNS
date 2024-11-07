@@ -41,17 +41,14 @@ func (api *API) SetupRouter() {
 	api.Echo.POST("/user/sign-in", api.UseController.HandleSignIn)
 	api.Echo.POST("/user/editPass", api.UseController.HanEditLogin)
 
-	//	api.Echo.PUT("/profile/update", api.UseController.UpdateUserById)
+
 	user := api.Echo.Group("", myMiddleware.JWTMiddlware())
-
-
-	// user.GET("/profile", api.UseController.Profile)
-	// user.PUT("/profile/update", api.UseController.UpdateProfile)
 
 	user.POST("/user/creatUser", myMiddleware.PermissionMiddleware([]int{2},"Them")(api.UseController.CreatUser))
 	user.GET("/user/selectAll", myMiddleware.PermissionMiddleware([]int{2,4,3},"Xem")(api.UseController.SelectUserAll))
 	user.GET("/user/selectOne/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.UseController.SelectUserById))
 	user.GET("/user/selectCount/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.UseController.SelectCountUser))
+	user.PUT("/user/update/", myMiddleware.PermissionMiddleware([]int{2},"Sua")(api.UseController.UpdateUserById))
 
 	user.POST("/user/education/creat", myMiddleware.PermissionMiddleware([]int{2},"Them")(api.EducationController.CreatEducation))
 	user.GET("/user/education/SelectAll/", myMiddleware.PermissionMiddleware([]int{2},"Xem")(api.EducationController.SelectEducationByUser))

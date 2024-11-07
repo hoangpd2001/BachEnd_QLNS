@@ -14,7 +14,7 @@ type UserRepo interface {
 	SelectUserAll(context context.Context) ([]resUser.ResUser, error)
 	SelectUserById(context context.Context, IdUser int) (resUser.ResUser, error)
 	SelectCountUser(context context.Context) ([]resUser.ResUserCount, error)
-	// UpdateUserById(context context.Context, user model.User ) (model.User, error)
+	 UpdateUserById(context context.Context, user resUser.ResUser ) (resUser.ResUser, error)
 }
 type EducationRepo interface {
 	CreatEducation(context context.Context, UserEdu resUser.ResEducation) (resUser.ResEducation, error)
