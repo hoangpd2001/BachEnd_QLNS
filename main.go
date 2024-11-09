@@ -4,7 +4,6 @@ import (
 	"BackEnd/mod/config"
 	"BackEnd/mod/db"
 	"net/http"
-	"os"
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
@@ -28,6 +27,6 @@ func main() {
 	api := config.InitApp(e, sql.Db)
 	api.SetupRouter()
 
-	//e.Logger.Fatal(e.Start(":1323"))
-	e.Logger.Fatal(e.Start("0.0.0.0:" + os.Getenv("PORT")))
+	e.Logger.Fatal(e.Start(":1323"))
+	//e.Logger.Fatal(e.Start("0.0.0.0:" + os.Getenv("PORT")))
 }

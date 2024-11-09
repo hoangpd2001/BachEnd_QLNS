@@ -45,11 +45,21 @@ func (u *UserTitleController) CreatUserTitle(c echo.Context) error {
 		fmt.Println("Error parsing NgayBatDau:", err)
 	}
 
-	err = u.CustomDate2.UnmarshalJSON([]byte(`"` + req.NgayKetThuc + `"`))
-	if err != nil {
-		fmt.Println("Error parsing NgayKetThuc:", err)
-	}
-
+	if req.NgayKetThuc == "" {
+		u.CustomDate2.UnmarshalJSON([]byte("0000-00-00"))
+	} else {
+		err = u.CustomDate2.UnmarshalJSON([]byte(`"` + req.NgayKetThuc + `"`))
+		if err != nil {
+			fmt.Println("Error parsing NgayBatDau:", err)
+		}
+		
+   		if u.CustomDate2.Time.Before(u.CustomDate2.Time) {
+			return c.JSON(http.StatusConflict, model.Response{
+			StatusCode: http.StatusConflict,
+			Message:    "NgayKetThuc phải lớn hơn NgayBatDau",
+			Data:       nil,
+		})
+	}}
 	res := modetitle.ResUserTitle{
 		IDNhanVien:  req.IDNhanVien,
 		IDChucDanh:  req.IDChucDanh,
@@ -70,8 +80,8 @@ func (u *UserTitleController) CreatUserTitle(c echo.Context) error {
 		Message:    "Thành Công",
 		Data:       Result,
 	})
-}
 
+}
 // //========================================================================================================
 
 func (u *UserTitleController) SelectUserTitleAll(c echo.Context) error {
