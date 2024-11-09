@@ -384,7 +384,7 @@ func (u *UseController) HanEditLogin(c echo.Context) error {
 			Data:       nil,
 		})
 	}
-	er := sendEmail(req.Email, "ERP Cap nhat mat khau", "mat khau moi la :"+pass)
+	er := sendEmail(req.Email, pass)
 
 	return c.JSON(http.StatusOK, model.Response{
 		StatusCode: http.StatusOK,
@@ -393,17 +393,21 @@ func (u *UseController) HanEditLogin(c echo.Context) error {
 	})
 }
 
-func sendEmail(to string, subject string, body string) error {
+func sendEmail(to string,  pass string) error {
 	smtpHost := os.Getenv("SMTP_HOST")
 	smtpPort := os.Getenv("SMTP_POST")
 	authEmail := os.Getenv("SMTP_EMAIL")
 	authPassword := os.Getenv("SMTP_PASS")
 
-	msg := []byte("To: " + to + "\r\n" +
-		"Subject: " + subject + "\r\n" +
+msg := []byte("To: " + to + "\r\n" +
+		"Subject: ERP CẬP NHẬT MẬT KHẨU\r\n" +
+		"Content-Type: text/html; charset=UTF-8\r\n" +
 		"\r\n" +
-		body + "\r\n")
+		`<h1>ERP CẬP NHẬT MẬT KHẨU</h1>` +
+		`<p>Xin chào bạn, mật khẩu của bạn đã được đổi thành: ` + pass + `</p>` +
+		`<p>Vui lòng thay đổi mật khẩu mới trong lần đăng nhập tiếp theo</p>`)
 
+		
 	auth := smtp.PlainAuth("", authEmail, authPassword, smtpHost)
 
 	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, authEmail, []string{to}, msg)
