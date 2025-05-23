@@ -142,7 +142,7 @@ func (u *UserRepoImpl) CheckLogin(context context.Context, loginReq reqUser.ReqS
 					nhanvien_chucdanh nc 
 				ON 
 					n.ID = nc.IDNhanVien 
-					AND (nc.NgayKetThuc IS NULL OR nc.NgayKetThuc = '0000-00-00 00:00:00')
+					
 				WHERE 
 					n.Email = ?;`
 	err := u.sqlDB.SelectContext(context, &ListUser, sql, loginReq.Email)
