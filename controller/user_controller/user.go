@@ -281,6 +281,8 @@ func (u *UseController) HandleSignIn(c echo.Context) error {
 	fmt.Println(3)
 	fmt.Println(ListUser)
 	if err != nil {
+		fmt.Println(4)
+		fmt.Println(err)
 		return c.JSON(http.StatusUnauthorized, model.Response{
 			StatusCode: http.StatusUnauthorized,
 			Message:    banana.SignInFail.Error(),
