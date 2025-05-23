@@ -34,6 +34,7 @@ func (u *UseController) CreatUser(c echo.Context) error {
 	req := &reqUser.ReqUser{}
 	validatedReq, err := u.Bind.BindAndValidate(c, req)
 	if err != nil {
+		fmt.Println(err)
 		return c.JSON(http.StatusBadRequest, model.Response{
 			StatusCode: http.StatusBadRequest,
 			Message:    err.Error(),
